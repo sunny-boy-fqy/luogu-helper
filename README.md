@@ -1,41 +1,41 @@
-# Luogu Helper
+# Luogu Helper - 洛谷辅助工具
 
-A comprehensive toolkit for competitive programming (OI/ACM) development, optimized for use with **VSCode**.
+一个为算法竞赛（OI/ACM）开发打造的综合工具集，**专为 VSCode 优化**。
 
-## Features
+## 功能特性
 
-- **Problem Setup**: Quickly create new problem directories with standard templates
-- **Data Fetching**: Fetch problem statements, samples, and solutions from Luogu
-- **Testing**: Built-in judge and checker for local testing
-- **Data Generation**: Powerful library for generating random test cases
-- **Sync**: Backup and sync your code with Google Drive
-- **Cross-platform**: Support for Linux/macOS and Windows
+- **题目初始化**：快速创建题目目录，包含标准模板
+- **数据获取**：从洛谷抓取题目描述、样例数据和题解
+- **本地测试**：内置评测器和对排工具，支持本地调试
+- **数据生成**：强大的随机数据生成库，支持多种数据类型
+- **云端同步**：通过 Google Drive 备份和同步代码
+- **跨平台支持**：支持 Linux/macOS 和 Windows
 
-## Quick Start
+## 快速开始
 
-### Setup
+### 安装
 
-#### Method 1: Clone with Git (Recommended)
+#### 方法 1：使用 Git 克隆（推荐）
 
 ```bash
-# Clone the repository
+# 克隆仓库
 git clone https://github.com/sunny-boy-fqy/luogu-helper.git
 cd luogu-helper
 
-# Make scripts executable (Linux/macOS)
+# Linux/macOS：添加执行权限
 chmod +x clear new sync tools/*
 ```
 
-#### Method 2: Download with curl/wget
+#### 方法 2：使用 curl/wget 下载
 
-If you don't have git or want a quick download:
+如果你没有 git 或想快速下载：
 
-**Using curl:**
+**使用 curl：**
 ```bash
-# Create directory
+# 创建目录
 mkdir -p luogu-helper && cd luogu-helper
 
-# Download individual files
+# 下载单个文件
 curl -O https://raw.githubusercontent.com/sunny-boy-fqy/luogu-helper/main/clear
 curl -O https://raw.githubusercontent.com/sunny-boy-fqy/luogu-helper/main/clear.bat
 curl -O https://raw.githubusercontent.com/sunny-boy-fqy/luogu-helper/main/new
@@ -44,43 +44,43 @@ curl -O https://raw.githubusercontent.com/sunny-boy-fqy/luogu-helper/main/sync
 curl -O https://raw.githubusercontent.com/sunny-boy-fqy/luogu-helper/main/sync.bat
 curl -O https://raw.githubusercontent.com/sunny-boy-fqy/luogu-helper/main/README.md
 
-# Download directories as tarballs
+# 下载整个目录为 tar 包
 curl -L https://api.github.com/repos/sunny-boy-fqy/luogu-helper/tarball/main | tar xz --strip-components=1
 ```
 
-**Using wget:**
+**使用 wget：**
 ```bash
-# Download entire repository as zip
+# 下载整个仓库为 zip
 wget https://github.com/sunny-boy-fqy/luogu-helper/archive/refs/heads/main.zip
 unzip main.zip
 cd luogu-helper-main
 
-# Or download tarball
+# 或下载 tar 包
 wget -O - https://api.github.com/repos/sunny-boy-fqy/luogu-helper/tarball/main | tar xz
 cd sunny-boy-fqy-luogu-helper-*/
 ```
 
-**One-liner install (Linux/macOS):**
+**一键安装（Linux/macOS）：**
 ```bash
-# Download and extract in one command
+# 一行命令下载并解压
 curl -L https://api.github.com/repos/sunny-boy-fqy/luogu-helper/tarball/main | tar xz --strip-components=1 -C luogu-helper
 
-# Or with wget
+# 或使用 wget
 wget -qO- https://api.github.com/repos/sunny-boy-fqy/luogu-helper/tarball/main | tar xz --strip-components=1 -C luogu-helper
 ```
 
-**Make scripts executable:**
+**添加执行权限：**
 ```bash
 chmod +x clear new sync tools/*
 ```
 
-### Recommended: VSCode Integration
+### 推荐：VSCode 集成
 
-This toolkit works best with VSCode. Recommended extensions:
+本工具集与 VSCode 配合使用效果最佳。推荐安装以下扩展：
 - C/C++ Extension Pack
 - Competitive Programming Helper
 
-Add to `.vscode/settings.json`:
+添加到 `.vscode/settings.json`：
 ```json
 {
     "C_Cpp.default.cppStandard": "c++17",
@@ -88,109 +88,111 @@ Add to `.vscode/settings.json`:
 }
 ```
 
-## Commands
+## 命令说明
 
-### 1. Create New Problem: `./new`
+### 1. 创建新题目：`./new`
 
 ```bash
-# Create from Luogu problem ID
+# 从洛谷题号创建
 ./new P5736
 ./new T721517
 
-# Create blank directory
+# 创建空白目录
 ./new my_contest_problem
 ```
 
-This creates a new directory with:
-- `main.cpp` - Your solution template
-- `gen.cpp` - Data generator (copy from std/)
-- `data/` - Sample test cases (if fetched from Luogu)
-- `info` - Problem metadata
+这将创建一个包含以下文件的新目录：
+- `main.cpp` - 你的解答代码模板
+- `gen.cpp` - 数据生成器（从 std/ 复制）
+- `data/` - 样例测试数据（如果从洛谷抓取成功）
+- `info` - 题目元数据
 
-### 2. Fetch Problem Info: `./get_problem`
+### 2. 获取题目信息：`./get_problem`
 
-Run inside a problem directory to fetch the full problem statement:
+在题目目录中运行，获取完整题目描述：
 ```bash
 cd P5736
-./get_problem   # Creates problem.md
+./get_problem   # 创建 problem.md
 ```
 
-### 3. Fetch Solution: `./get_solve`
+### 3. 获取题解：`./get_solve`
 
-Fetches the highest-rated AC solution from Luogu:
+从洛谷获取最高评分的 AC 题解：
 ```bash
 cd P5736
-./get_solve     # Creates std.cpp
+./get_solve     # 创建 std.cpp
 ```
 
-### 4. Local Judge: `./judge`
+**改进**：如果题解作者将代码拆分成多个小块，脚本会智能检测并尝试下一篇题解；如果没有更多题解，则使用第一篇的最后一个代码块。
 
-Test your solution against sample data:
+### 4. 本地评测：`./judge`
+
+使用样例数据测试你的代码：
 ```bash
 cd P5736
-./judge         # Compiles and tests main.cpp
+./judge         # 编译并测试 main.cpp
 ```
 
-### 5. Checker (Stress Test): `./checker`
+### 5. 对排工具（压力测试）：`./checker`
 
-Compare your solution with the standard solution using random tests:
+使用随机数据对比你的代码和标准代码：
 ```bash
-cd P5736
+cd P3834
 
-# First, get/copy std.cpp
+# 首先，获取或复制 std.cpp
 ./get_solve
 
-# Or copy from another source
+# 或者从其他来源复制
 cp /path/to/solution.cpp std.cpp
 
-# Then run checker
-./checker [num_tests] [timeout]
-./checker 100 2    # Run 100 tests with 2s timeout
+# 然后运行对排
+./checker [测试次数] [超时时间]
+./checker 100 2    # 运行 100 组测试，每组超时 2 秒
 ```
 
-**Checker Features:**
-- Automatically compiles gen.cpp, main.cpp, and std.cpp
-- Generates random test data
-- Compares outputs (ignoring whitespace differences)
-- Stops at first mismatch and saves failing case to `fail.in`
-- Progress report every 10 tests
+**对排功能**：
+- 自动编译 gen.cpp、main.cpp 和 std.cpp
+- 生成随机测试数据
+- 对比输出结果（忽略空格差异）
+- 第一个错误出现时停止，并保存失败样例到 `fail.in`
+- 每 10 组测试报告进度
 
-### 6. Data Generator: `./gen`
+### 6. 数据生成器：`./gen`
 
-Generate custom test data:
+生成自定义测试数据：
 ```bash
 cd P5736
-./gen > test.in    # Generate to file
-./gen | ./main     # Pipe to your program
+./gen > test.in    # 生成到文件
+./gen | ./main     # 直接管道输入到程序
 ```
 
-Customize `gen.cpp` to generate problem-specific data. See `std/gen.cpp` for examples.
+根据题目需求自定义 `gen.cpp`。参考 `std/gen.cpp` 中的示例。
 
-### 7. Sync with Google Drive: `./clear` & `./sync`
+### 7. Google Drive 同步：`./clear` & `./sync`
 
-These commands allow you to backup your templates and tools to Google Drive, and sync them across multiple devices.
+这些命令允许你将模板和工具备份到 Google Drive，并在多台设备间同步。
 
 ```bash
-# Upload core files to Google Drive and clean up local problem dirs
+# 上传核心文件到 Google Drive 并清理本地题目目录
 ./clear
 
-# Download core files from Google Drive
+# 从 Google Drive 下载核心文件
 ./sync
 ```
 
-#### Setting up rclone
+#### 设置 rclone
 
-**Step 1: Install rclone**
+**步骤 1：安装 rclone**
 
-**Linux:**
+**Linux：**
 ```bash
-# Method 1: Using snap
+# 方法 1：使用 snap
 sudo snap install rclone
 
-# Method 2: Download binary
+# 方法 2：下载二进制文件
 curl https://rclone.org/install.sh | sudo bash
 
-# Method 3: Using package manager
+# 方法 3：使用包管理器
 # Debian/Ubuntu
 sudo apt install rclone
 
@@ -201,153 +203,153 @@ sudo dnf install rclone
 sudo pacman -S rclone
 ```
 
-**macOS:**
+**macOS：**
 ```bash
-# Using Homebrew
+# 使用 Homebrew
 brew install rclone
 
-# Or download from https://rclone.org/downloads/
+# 或从 https://rclone.org/downloads/ 下载
 ```
 
-**Windows:**
-1. Download from https://rclone.org/downloads/
-2. Extract to a folder (e.g., `C:\rclone`)
-3. Add to PATH: Open System Properties → Environment Variables → Edit PATH → Add `C:\rclone`
-4. Verify: Open CMD and type `rclone version`
+**Windows：**
+1. 从 https://rclone.org/downloads/ 下载
+2. 解压到文件夹（如 `C:\rclone`）
+3. 添加到 PATH：系统属性 → 环境变量 → 编辑 PATH → 添加 `C:\rclone`
+4. 验证：打开 CMD，输入 `rclone version`
 
-**Step 2: Configure Google Drive**
+**步骤 2：配置 Google Drive**
 
 ```bash
-# Start configuration
+# 开始配置
 rclone config
 ```
 
-Follow these steps:
-1. Type `n` for new remote
-2. Name: `gdrive` (must match what scripts expect)
-3. Select `13` for Google Drive (or the corresponding number)
-4. Leave client_id and client_secret empty (press Enter)
-5. Select scope: `1` (Full access)
-6. Root folder ID: leave empty
-7. Service Account: leave empty
-8. Edit advanced config: `n`
-9. Use auto config: `y` (for desktop) or `n` (for headless/SSH)
-   - If `y`: Browser will open, log in to Google and authorize
-   - If `n`: Follow the URL provided, get code, paste back
-10. Confirm: `y`
+按以下步骤操作：
+1. 输入 `n` 创建新远程
+2. 名称：`gdrive`（必须与脚本中一致）
+3. 选择 `13` 对应 Google Drive（或实际显示的编号）
+4. client_id 和 client_secret 留空（直接回车）
+5. 选择范围：`1`（完全访问权限）
+6. Root folder ID：留空
+7. Service Account：留空
+8. 编辑高级配置：`n`
+9. 使用自动配置：`y`（桌面环境）或 `n`（无图形界面/SSH）
+   - 如果选 `y`：浏览器会打开，登录 Google 并授权
+   - 如果选 `n`：访问提供的 URL，获取代码，粘贴回来
+10. 确认：`y`
 
-Verify configuration:
+验证配置：
 ```bash
-rclone listremotes          # Should show: gdrive:
-rclone lsd gdrive:          # List your Drive root
+rclone listremotes          # 应该显示：gdrive:
+rclone lsd gdrive:          # 列出 Drive 根目录
 ```
 
-**Step 3: Create sync folder (optional)**
+**步骤 3：创建同步文件夹（可选）**
 
-By default, scripts sync to `gdrive:OI/program`. You can create this folder:
+默认脚本同步到 `gdrive:OI/program`。你可以创建此文件夹：
 ```bash
 rclone mkdir gdrive:OI/program
 ```
 
-Or change the path in `clear` and `sync` scripts by editing the `REMOTE` variable.
+或修改 `clear` 和 `sync` 脚本中的 `REMOTE` 变量来更改路径。
 
-**Step 4: Test sync**
+**步骤 4：测试同步**
 
 ```bash
-# Test upload (dry run)
+# 测试上传（试运行）
 rclone sync . gdrive:OI/program --dry-run
 
-# Test download (dry run)
+# 测试下载（试运行）
 rclone sync gdrive:OI/program . --dry-run
 ```
 
-**What gets synced:**
-- `std/` - Templates
-- `tools/` - All scripts and utilities
-- `include/` - Header libraries
-- `.vscode/` - VSCode settings
-- `new`, `clear`, `sync` scripts
-- All `main.cpp` files in problem directories
+**同步内容包括：**
+- `std/` - 模板文件
+- `tools/` - 所有脚本和工具
+- `include/` - 头文件库
+- `.vscode/` - VSCode 设置
+- `new`、`clear`、`sync` 脚本
+- 题目目录中的所有 `main.cpp`
 
-**What doesn't get synced:**
-- Problem directories (only `main.cpp` inside them)
-- Compiled binaries
-- Test data outputs
-- Personal solution files
+**不同步的内容：**
+- 题目目录（只同步其中的 `main.cpp`）
+- 编译后的二进制文件
+- 测试数据输出
+- 个人解答文件
 
-#### Troubleshooting
+#### 常见问题
 
-**"gdrive not found" error:**
+**"gdrive not found" 错误：**
 ```bash
-# Re-run config
+# 重新运行配置
 rclone config
 
-# Check if 'gdrive' is in the list
+# 检查 'gdrive' 是否在列表中
 rclone listremotes
 ```
 
-**Token expired:**
+**Token 过期：**
 ```bash
-# Refresh token
+# 刷新 token
 rclone config reconnect gdrive:
 ```
 
-**Rate limiting:**
-Google Drive has API limits. If you hit them, wait a few minutes or add `--tpslimit 1` to sync commands.
+**速率限制：**
+Google Drive 有 API 限制。如果触发限制，等待几分钟或在同步命令中添加 `--tpslimit 1`。
 
-**Large files:**
-For files > 100MB, rclone may need special handling. Use `--drive-chunk-size 128M` flag.
+**大文件：**
+对于超过 100MB 的文件，rclone 可能需要特殊处理。使用 `--drive-chunk-size 128M` 参数。
 
-## Data Generation Library
+## 数据生成库
 
-Include `datagen.hpp` for powerful test data generation:
+包含 `datagen.hpp`，提供强大的随机数据生成能力：
 
 ```cpp
 #include "../include/datagen.hpp"
 using namespace datagen;
 
 int main() {
-    init_rand();  // Initialize random seed
+    init_rand();  // 初始化随机种子
     
-    // Basic random numbers
+    // 基础随机数
     int x = random_int(1, 100);
     double y = random_double(0.0, 1.0);
     
-    // Arrays and sequences
-    auto arr = random_array(10, 1, 100);           // Random array
-    auto perm = random_permutation(10);             // Permutation
-    auto inc = random_increasing(10, 1, 100);       // Strictly increasing
+    // 数组和序列
+    auto arr = random_array(10, 1, 100);           // 随机数组
+    auto perm = random_permutation(10);             // 随机排列
+    auto inc = random_increasing(10, 1, 100);       // 严格递增序列
     auto seq = sequence_from_function(10, [](int i) { return i * i; });
     
-    // Strings
+    // 字符串
     string s = random_string(10, LOWERCASE);
     string word = random_word(3, 8);
     string sentence = random_sentence(10);
     string para = random_paragraph(5);
     
-    // Graphs
-    auto tree = random_tree(100);                   // Unweighted tree
-    auto wtree = random_tree(100, true, 1, 100);   // Weighted tree
-    auto graph = random_connected_graph(100, 200);  // Connected graph
-    auto dag = random_dag(50, 100);                 // DAG
-    auto bip = random_bipartite(20, 30, 100);       // Bipartite graph
+    // 图
+    auto tree = random_tree(100);                   // 无权树
+    auto wtree = random_tree(100, true, 1, 100);   // 带权树
+    auto graph = random_connected_graph(100, 200);  // 连通图
+    auto dag = random_dag(50, 100);                 // 有向无环图
+    auto bip = random_bipartite(20, 30, 100);       // 二分图
     
-    // Vectors and matrices
-    auto vecs = random_vectors(10, 3, -100, 100);   // 10 3D vectors
-    auto mat = random_matrix(5, 5, 0, 1);           // 5x5 matrix
+    // 向量和矩阵
+    auto vecs = random_vectors(10, 3, -100, 100);   // 10 个三维向量
+    auto mat = random_matrix(5, 5, 0, 1);           // 5x5 矩阵
     
-    // Geometry
+    // 几何
     auto pts = random_points(10, -100, 100, -100, 100);
     auto poly = random_convex_polygon(10, -100, 100, -100, 100);
     auto simple = random_simple_polygon(10, -100, 100, -100, 100);
     
-    // Polygon calculations
-    long long area2 = polygon_area2(poly);          // Twice the area
-    double perim = polygon_perimeter(poly);         // Perimeter
+    // 多边形计算
+    long long area2 = polygon_area2(poly);          // 两倍面积
+    double perim = polygon_perimeter(poly);         // 周长
     
-    // Output helpers
+    // 输出辅助
     print_array(arr);
-    print_graph(100, edges, true);                  // With weights
+    print_graph(100, edges, true);                  // 带权重
     print_points(pts);
     print_polygon(poly);
     
@@ -355,44 +357,44 @@ int main() {
 }
 ```
 
-### Library Features
+### 库函数分类
 
-| Category | Functions |
-|----------|-----------|
-| **Random Numbers** | `random_int()`, `random_double()`, `random_bool()` |
-| **Arrays** | `random_array()`, `random_permutation()`, `random_increasing()`, `random_decreasing()`, `random_non_decreasing()`, `sequence_from_function()` |
-| **Strings** | `random_string()`, `random_word()`, `random_sentence()`, `random_paragraph()`, `random_palindrome()` |
-| **Graphs** | `random_tree()`, `random_connected_graph()`, `random_dag()`, `random_bipartite()` |
-| **Vectors** | `random_vectors()`, `random_matrix()` |
-| **Geometry** | `random_points()`, `random_convex_polygon()`, `random_simple_polygon()`, `polygon_area2()`, `polygon_perimeter()` |
-| **Output** | `print_array()`, `print_matrix()`, `print_graph()`, `print_tree()`, `print_points()`, `print_polygon()` |
+| 分类 | 函数 |
+|------|------|
+| **随机数** | `random_int()`, `random_double()`, `random_bool()` |
+| **数组** | `random_array()`, `random_permutation()`, `random_increasing()`, `random_decreasing()`, `random_non_decreasing()`, `sequence_from_function()` |
+| **字符串** | `random_string()`, `random_word()`, `random_sentence()`, `random_paragraph()`, `random_palindrome()` |
+| **图** | `random_tree()`, `random_connected_graph()`, `random_dag()`, `random_bipartite()` |
+| **向量** | `random_vectors()`, `random_matrix()` |
+| **几何** | `random_points()`, `random_convex_polygon()`, `random_simple_polygon()`, `polygon_area2()`, `polygon_perimeter()` |
+| **输出** | `print_array()`, `print_matrix()`, `print_graph()`, `print_tree()`, `print_points()`, `print_polygon()` |
 
-## Directory Structure
+## 目录结构
 
 ```
 luogu-helper/
-├── clear              # Upload to Google Drive & cleanup
-├── sync               # Download from Google Drive
-├── new                # Create new problem
+├── clear              # 上传到 Google Drive 并清理
+├── sync               # 从 Google Drive 下载
+├── new                # 创建新题目
 ├── std/
-│   ├── main.cpp       # Default solution template
-│   └── gen.cpp        # Default data generator template
+│   ├── main.cpp       # 默认代码模板
+│   └── gen.cpp        # 默认数据生成器模板
 ├── include/
-│   ├── datagen.hpp    # Data generation library
-│   ├── qio.hpp        # Fast IO utilities
-│   └── ...            # Other algorithm templates
+│   ├── datagen.hpp    # 数据生成库
+│   ├── qio.hpp        # 快速 IO 工具
+│   └── ...            # 其他算法模板
 ├── tools/
-│   ├── judge          # Local judge
-│   ├── checker        # Stress test (compare with std)
-│   ├── get_problem    # Fetch problem statement
-│   ├── get_solve      # Fetch AC solution
+│   ├── judge          # 本地评测器
+│   ├── checker        # 对排工具
+│   ├── get_problem    # 获取题目描述
+│   ├── get_solve      # 获取 AC 题解
 │   └── fetch_problem.py
-└── .vscode/           # VSCode settings
+└── .vscode/           # VSCode 配置
 ```
 
-## Windows Support
+## Windows 支持
 
-For Windows users, use the `.bat` versions of scripts:
+Windows 用户使用 `.bat` 版本的脚本：
 
 ```cmd
 new.bat P5736
@@ -400,44 +402,44 @@ checker.bat 100 2
 judge.bat
 ```
 
-Or use WSL (Windows Subsystem for Linux) for full Linux compatibility.
+或者使用 WSL（Windows Subsystem for Linux）获得完整的 Linux 兼容性。
 
-## Environment Variables
+## 环境变量
 
-- `LUOGU_COOKIE`: Set your Luogu session cookie for accessing private problems
+- `LUOGU_COOKIE`：设置洛谷会话 cookie，用于访问私有题目
 
 ```bash
 export LUOGU_COOKIE="_uid=12345; __client_id=..."
 ```
 
-Or create `~/.luogu_cookie` file with your cookie.
+或者在用户目录创建 `~/.luogu_cookie` 文件存放 cookie。
 
-## Tips
+## 使用技巧
 
-1. **Use VSCode snippets**: Add your commonly used code patterns to VSCode snippets
-2. **Customize gen.cpp**: Copy `std/gen.cpp` to your problem directory and modify
-3. **Checker for debugging**: Use `./checker` extensively to catch edge cases
-4. **Keep std.cpp**: Always have a correct reference solution for comparison
-5. **Google Drive backup**: Run `./clear` regularly to backup your progress
+1. **使用 VSCode 代码片段**：将常用的代码模式添加到 VSCode 代码片段中
+2. **自定义 gen.cpp**：将 `std/gen.cpp` 复制到题目目录并修改
+3. **对排调试**：充分利用 `./checker` 捕获边界情况
+4. **保留 std.cpp**：始终保留一份正确的参考代码用于对比
+5. **定期备份**：经常运行 `./clear` 备份进度到 Google Drive
 
-## Requirements
+## 系统要求
 
-- **Linux/macOS**: bash, g++, python3, rclone (for sync)
-- **Windows**: MinGW-w64 or MSVC, python3, batch support
-- **All platforms**: C++17 compiler, git (optional)
+- **Linux/macOS**：bash, g++, python3, rclone（用于同步）
+- **Windows**：MinGW-w64 或 MSVC, python3, 批处理支持
+- **所有平台**：C++17 编译器, git（可选）
 
-## License
+## 许可证
 
-MIT License - Feel free to use and modify for your competitive programming journey!
+MIT License - 自由使用和修改，助力你的算法竞赛之路！
 
-## Contributing
+## 贡献指南
 
-Contributions are welcome! Please ensure:
-- Code follows existing style
-- Scripts remain portable (no hardcoded paths)
-- Add tests for new features
-- Update documentation
+欢迎贡献！请确保：
+- 代码遵循现有风格
+- 脚本保持可移植性（无硬编码路径）
+- 为新功能添加测试
+- 更新文档
 
 ---
 
-**Happy Coding!** 🚀
+**祝编码愉快！** 🚀
