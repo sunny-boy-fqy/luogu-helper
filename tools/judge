@@ -3,8 +3,9 @@
 # Global judge wrapper
 # Auto-recompiles judge.cpp if it's newer than the binary
 
-# Get the directory where this script is located
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# Get the directory where this script is located (resolve symlinks)
+SCRIPT_SOURCE="$(readlink -f "${BASH_SOURCE[0]}")"
+SCRIPT_DIR="$(cd "$(dirname "$SCRIPT_SOURCE")" && pwd)"
 TOOLS_DIR="$SCRIPT_DIR"
 JUDGE_CPP="$TOOLS_DIR/judge.cpp"
 JUDGE_BIN="$TOOLS_DIR/judge_bin"
