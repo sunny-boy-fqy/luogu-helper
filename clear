@@ -14,9 +14,16 @@ KEEP_LIST=(
     "std"
     "tools"
     "new"
+    "new.bat"
     "clear"
+    "clear.bat"
     "include"
     ".vscode"
+    "sync"
+    "sync.bat"
+    ".gitignore"
+    "README.md"
+    "README_en.md"
 )
 
 echo "Starting sync to Google Drive ($REMOTE)..."
@@ -28,7 +35,14 @@ rclone sync "$LOCAL_DIR" "$REMOTE" -L \
     --filter "+ /.vscode/**" \
     --filter "+ /new" \
     --filter "+ /clear" \
+    --filter "+ /new.bat" \
+    --filter "+ /clear.bat" \
+    --filter "+ /sync" \
+    --filter "+ /sync.bat" \
     --filter "+ **/main.cpp" \
+    --filter "+ /README.md" \
+    --filter "+ /README_en.md" \
+    --filter "+ /.gitignore" \
     --filter "- *" \
     --progress
 
