@@ -15,12 +15,62 @@
 
 ### 安装
 
+#### 方法 1：使用 Git 克隆（推荐）
+
 ```bash
 # 克隆仓库
 git clone https://github.com/sunny-boy-fqy/luogu-helper.git
 cd luogu-helper
 
 # Linux/macOS：添加执行权限
+chmod +x clear new sync tools/*
+```
+
+#### 方法 2：使用 curl/wget 下载
+
+如果你没有 git 或想快速下载：
+
+**使用 curl：**
+```bash
+# 创建目录
+mkdir -p luogu-helper && cd luogu-helper
+
+# 下载单个文件
+curl -O https://raw.githubusercontent.com/sunny-boy-fqy/luogu-helper/main/clear
+curl -O https://raw.githubusercontent.com/sunny-boy-fqy/luogu-helper/main/clear.bat
+curl -O https://raw.githubusercontent.com/sunny-boy-fqy/luogu-helper/main/new
+curl -O https://raw.githubusercontent.com/sunny-boy-fqy/luogu-helper/main/new.bat
+curl -O https://raw.githubusercontent.com/sunny-boy-fqy/luogu-helper/main/sync
+curl -O https://raw.githubusercontent.com/sunny-boy-fqy/luogu-helper/main/sync.bat
+curl -O https://raw.githubusercontent.com/sunny-boy-fqy/luogu-helper/main/README.md
+
+# 下载整个目录为 tar 包
+curl -L https://api.github.com/repos/sunny-boy-fqy/luogu-helper/tarball/main | tar xz --strip-components=1
+```
+
+**使用 wget：**
+```bash
+# 下载整个仓库为 zip
+wget https://github.com/sunny-boy-fqy/luogu-helper/archive/refs/heads/main.zip
+unzip main.zip
+cd luogu-helper-main
+
+# 或下载 tar 包
+wget -O - https://api.github.com/repos/sunny-boy-fqy/luogu-helper/tarball/main | tar xz
+cd sunny-boy-fqy-luogu-helper-*/
+```
+
+**一键安装（Linux/macOS）：**
+```bash
+# 一行命令下载并解压
+curl -L https://api.github.com/repos/sunny-boy-fqy/luogu-helper/tarball/main | tar xz --strip-components=1 -C luogu-helper
+
+# 或使用 wget
+wget -qO- https://api.github.com/repos/sunny-boy-fqy/luogu-helper/tarball/main | tar xz --strip-components=1 -C luogu-helper
+```
+
+**添加执行权限：**
+```bash
 chmod +x clear new sync tools/*
 ```
 

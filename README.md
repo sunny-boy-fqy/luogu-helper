@@ -15,12 +15,62 @@ A comprehensive toolkit for competitive programming (OI/ACM) development, optimi
 
 ### Setup
 
+#### Method 1: Clone with Git (Recommended)
+
 ```bash
 # Clone the repository
 git clone https://github.com/sunny-boy-fqy/luogu-helper.git
 cd luogu-helper
 
 # Make scripts executable (Linux/macOS)
+chmod +x clear new sync tools/*
+```
+
+#### Method 2: Download with curl/wget
+
+If you don't have git or want a quick download:
+
+**Using curl:**
+```bash
+# Create directory
+mkdir -p luogu-helper && cd luogu-helper
+
+# Download individual files
+curl -O https://raw.githubusercontent.com/sunny-boy-fqy/luogu-helper/main/clear
+curl -O https://raw.githubusercontent.com/sunny-boy-fqy/luogu-helper/main/clear.bat
+curl -O https://raw.githubusercontent.com/sunny-boy-fqy/luogu-helper/main/new
+curl -O https://raw.githubusercontent.com/sunny-boy-fqy/luogu-helper/main/new.bat
+curl -O https://raw.githubusercontent.com/sunny-boy-fqy/luogu-helper/main/sync
+curl -O https://raw.githubusercontent.com/sunny-boy-fqy/luogu-helper/main/sync.bat
+curl -O https://raw.githubusercontent.com/sunny-boy-fqy/luogu-helper/main/README.md
+
+# Download directories as tarballs
+curl -L https://api.github.com/repos/sunny-boy-fqy/luogu-helper/tarball/main | tar xz --strip-components=1
+```
+
+**Using wget:**
+```bash
+# Download entire repository as zip
+wget https://github.com/sunny-boy-fqy/luogu-helper/archive/refs/heads/main.zip
+unzip main.zip
+cd luogu-helper-main
+
+# Or download tarball
+wget -O - https://api.github.com/repos/sunny-boy-fqy/luogu-helper/tarball/main | tar xz
+cd sunny-boy-fqy-luogu-helper-*/
+```
+
+**One-liner install (Linux/macOS):**
+```bash
+# Download and extract in one command
+curl -L https://api.github.com/repos/sunny-boy-fqy/luogu-helper/tarball/main | tar xz --strip-components=1 -C luogu-helper
+
+# Or with wget
+wget -qO- https://api.github.com/repos/sunny-boy-fqy/luogu-helper/tarball/main | tar xz --strip-components=1 -C luogu-helper
+```
+
+**Make scripts executable:**
+```bash
 chmod +x clear new sync tools/*
 ```
 
