@@ -1,0 +1,36 @@
+# Ignore problem directories (user's solutions)
+P*/
+T*/
+U*/
+*/
+!std/
+!tools/
+!include/
+!.vscode/
+
+# Ignore compiled binaries
+*.exe
+*.out
+*.o
+*.obj
+
+# Ignore test data outputs
+*.in
+*.out
+!data/*.in
+!data/*.out
+fail.in
+fail.out
+
+# Ignore IDE files
+.vscode/settings.json
+.vscode/*.log
+
+# Ignore Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Ignore OS files
+.DS_Store
+Thumbs.db

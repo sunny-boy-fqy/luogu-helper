@@ -1,0 +1,158 @@
+#!/bin/bash
+#
+# checker: Compare main.cpp with std.cpp using generated test data
+# Usage: ./checker [num_tests] [timeout_seconds]
+#   num_tests: Number of test cases to run (default: 100)
+#   timeout_seconds: Timeout for each test (default: 2)
+#
+
+set -e
+
+# Get the tools directory
+TOOLS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Parse arguments
+NUM_TESTS="${1:-100}"
+TIMEOUT="${2:-2}"
+
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m' # No Color
+
+# Find the problem directory (current working directory)
+PROB_DIR="$(pwd)"
+PROB_ID=$(basename "$PROB_DIR")
+
+echo "========================================"
+echo "  Checker: $PROB_ID"
+echo "  Tests: $NUM_TESTS | Timeout: ${TIMEOUT}s"
+echo "========================================"
+echo ""
+
+# Check required files
+if [ ! -f "$PROB_DIR/gen.cpp" ]; then
+    echo -e "${RED}Error: gen.cpp not found!${NC}"
+    echo "Please create gen.cpp or run: cp -r $TOOLS_DIR/../std/gen.cpp ."
+    exit 1
+fi
+
+if [ ! -f "$PROB_DIR/main.cpp" ]; then
+    echo -e "${RED}Error: main.cpp not found!${NC}"
+    exit 1
+fi
+
+if [ ! -f "$PROB_DIR/std.cpp" ]; then
+    echo -e "${YELLOW}Warning: std.cpp not found!${NC}"
+    echo "Attempting to fetch from Luogu..."
+    if [ -f "$TOOLS_DIR/get_solve" ]; then
+        cd "$PROB_DIR" && "$TOOLS_DIR/get_solve"
+    else
+        echo -e "${RED}Error: Could not fetch std.cpp${NC}"
+        exit 1
+    fi
+    
+    if [ ! -f "$PROB_DIR/std.cpp" ]; then
+        echo -e "${RED}Error: Failed to obtain std.cpp${NC}"
+        exit 1
+    fi
+fi
+
+# Create temp directory
+TEMP_DIR=$(mktemp -d)
+trap "rm -rf $TEMP_DIR" EXIT
+
+# Compile programs
+echo "Compiling..."
+echo "  - gen.cpp"
+if ! g++ -std=c++17 -O2 "$PROB_DIR/gen.cpp" -o "$TEMP_DIR/gen" 2>&1; then
+    echo -e "${RED}Error: Failed to compile gen.cpp${NC}"
+    exit 1
+fi
+
+echo "  - main.cpp"
+if ! g++ -std=c++17 -O2 "$PROB_DIR/main.cpp" -o "$TEMP_DIR/main" 2>&1; then
+    echo -e "${RED}Error: Failed to compile main.cpp${NC}"
+    exit 1
+fi
+
+echo "  - std.cpp"
+if ! g++ -std=c++17 -O2 "$PROB_DIR/std.cpp" -o "$TEMP_DIR/std" 2>&1; then
+    echo -e "${RED}Error: Failed to compile std.cpp${NC}"
+    exit 1
+fi
+
+echo ""
+echo "Running tests..."
+echo ""
+
+# Function to normalize output (ignore whitespace differences)
+normalize_output() {
+    # Remove trailing whitespace, normalize line endings, trim empty lines at end
+    sed 's/[[:space:]]*$//' "$1" | sed -e :a -e '/^\n*$/{$d;N;};/\n$/ba'
+}
+
+# Run tests
+FAILED=0
+for i in $(seq 1 $NUM_TESTS); do
+    # Generate test data
+    "$TEMP_DIR/gen" > "$TEMP_DIR/input.txt"
+    
+    # Run both programs with timeout
+    if ! timeout $TIMEOUT "$TEMP_DIR/main" < "$TEMP_DIR/input.txt" > "$TEMP_DIR/output_main.txt" 2>/dev/null; then
+        echo -e "${RED}Test $i: main.cpp TLE or crashed${NC}"
+        echo "Input saved to: $TEMP_DIR/input.txt"
+        FAILED=1
+        break
+    fi
+    
+    if ! timeout $TIMEOUT "$TEMP_DIR/std" < "$TEMP_DIR/input.txt" > "$TEMP_DIR/output_std.txt" 2>/dev/null; then
+        echo -e "${RED}Test $i: std.cpp TLE or crashed${NC}"
+        echo "This is unexpected - std.cpp should be correct!"
+        FAILED=1
+        break
+    fi
+    
+    # Normalize and compare outputs
+    normalize_output "$TEMP_DIR/output_main.txt" > "$TEMP_DIR/norm_main.txt"
+    normalize_output "$TEMP_DIR/output_std.txt" > "$TEMP_DIR/norm_std.txt"
+    
+    if ! diff -q "$TEMP_DIR/norm_main.txt" "$TEMP_DIR/norm_std.txt" >/dev/null 2>&1; then
+        echo -e "${RED}Test $i: WRONG ANSWER${NC}"
+        echo ""
+        echo "Input:"
+        head -20 "$TEMP_DIR/input.txt"
+        echo ""
+        echo "Your output (main.cpp):"
+        head -20 "$TEMP_DIR/output_main.txt"
+        echo ""
+        echo "Expected (std.cpp):"
+        head -20 "$TEMP_DIR/output_std.txt"
+        echo ""
+        
+        # Save failing test case
+        cp "$TEMP_DIR/input.txt" "$PROB_DIR/fail.in"
+        cp "$TEMP_DIR/output_std.txt" "$PROB_DIR/fail.out"
+        echo "Failing test saved to: fail.in, fail.out"
+        FAILED=1
+        break
+    fi
+    
+    # Progress report every 10 tests
+    if [ $((i % 10)) -eq 0 ]; then
+        echo -e "  ${GREEN}Passed $i/$NUM_TESTS tests...${NC}"
+    fi
+done
+
+echo ""
+echo "========================================"
+if [ $FAILED -eq 0 ]; then
+    echo -e "${GREEN}  All $NUM_TESTS tests passed!${NC}"
+    echo "========================================"
+    exit 0
+else
+    echo -e "${RED}  Stopped at test $i${NC}"
+    echo "========================================"
+    exit 1
+fi

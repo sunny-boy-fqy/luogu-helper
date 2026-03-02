@@ -1,0 +1,22 @@
+#!/bin/bash
+
+# Global judge wrapper
+# Auto-recompiles judge.cpp if it's newer than the binary
+
+# Get the directory where this script is located
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+TOOLS_DIR="$SCRIPT_DIR"
+JUDGE_CPP="$TOOLS_DIR/judge.cpp"
+JUDGE_BIN="$TOOLS_DIR/judge_bin"
+
+if [[ ! -f "$JUDGE_BIN" ]] || [[ "$JUDGE_CPP" -nt "$JUDGE_BIN" ]]; then
+    echo "Recompiling judge..."
+    g++ "$JUDGE_CPP" -O2 -o "$JUDGE_BIN"
+    if [ $? -ne 0 ]; then
+        echo "Error: Failed to compile $JUDGE_CPP"
+        exit 1
+    fi
+fi
+
+# Execute the judge binary in the current directory
+"$JUDGE_BIN" "$@"

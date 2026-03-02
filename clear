@@ -1,0 +1,58 @@
+#!/bin/bash
+
+# clear: Sync core OI files and main.cpp's to Google Drive, then clean up.
+# Usage: ./clear
+
+REMOTE="gdrive:OI/program"
+
+# Get the directory where this script is located
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+LOCAL_DIR="$SCRIPT_DIR"
+
+# Files/Directories to KEEP locally
+KEEP_LIST=(
+    "std"
+    "tools"
+    "new"
+    "clear"
+    "include"
+    ".vscode"
+)
+
+echo "Starting sync to Google Drive ($REMOTE)..."
+
+rclone sync "$LOCAL_DIR" "$REMOTE" -L \
+    --filter "+ /std/**" \
+    --filter "+ /tools/**" \
+    --filter "+ /include/**" \
+    --filter "+ /.vscode/**" \
+    --filter "+ /new" \
+    --filter "+ /clear" \
+    --filter "+ **/main.cpp" \
+    --filter "- *" \
+    --progress
+
+if [ $? -eq 0 ]; then
+    echo "✅ Sync completed successfully (Only main.cpp and tools uploaded)."
+    echo "Cleaning up local directory..."
+    
+    for item in "$LOCAL_DIR"/*; do
+        basename_item=$(basename "$item")
+        keep=false
+        for k in "${KEEP_LIST[@]}"; do
+            if [ "$basename_item" == "$k" ]; then
+                keep=true
+                break
+            fi
+        done
+        
+        if [ "$keep" == false ]; then
+            echo "Deleting: $basename_item"
+            rm -rf "$item"
+        fi
+    done
+    echo "✅ Cleanup finished."
+else
+    echo "❌ Sync failed! Cleanup aborted."
+    exit 1
+fi

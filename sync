@@ -1,0 +1,71 @@
+#!/bin/bash
+
+# sync: Sync core OI files from Google Drive to local, preserving problem directories.
+# Usage: ./sync
+
+REMOTE="gdrive:OI/program"
+
+# Get the directory where this script is located
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+LOCAL_DIR="$SCRIPT_DIR"
+
+# Files/Directories to sync FROM remote (will overwrite local)
+SYNC_LIST=(
+    "include"
+    "tools"
+    "std"
+    ".vscode"
+    "clear"
+    "new"
+    "sync"
+)
+
+echo "Starting sync FROM Google Drive ($REMOTE)..."
+echo "Local directory: $LOCAL_DIR"
+echo ""
+
+# First, check if rclone is installed
+if ! command -v rclone &> /dev/null; then
+    echo "❌ Error: rclone is not installed!"
+    echo "Please install rclone first: https://rclone.org/install/"
+    exit 1
+fi
+
+# Check if remote is configured
+if ! rclone listremotes | grep -q "^gdrive:$"; then
+    echo "❌ Error: Google Drive remote 'gdrive' not configured!"
+    echo "Please run: rclone config"
+    exit 1
+fi
+
+# Build filter rules for rclone
+FILTER_ARGS=()
+for item in "${SYNC_LIST[@]}"; do
+    FILTER_ARGS+=("--filter" "+ /$item/**")
+    FILTER_ARGS+=("--filter" "+ /$item")
+done
+
+# Add catch-all exclude (must be last)
+FILTER_ARGS+=("--filter" "- *")
+
+echo "Syncing core files from remote to local..."
+rclone sync "$REMOTE" "$LOCAL_DIR" -L \
+    "${FILTER_ARGS[@]}" \
+    --progress \
+    --delete-after
+
+if [ $? -eq 0 ]; then
+    echo ""
+    echo "✅ Sync completed successfully!"
+    echo ""
+    echo "Synced items:"
+    for item in "${SYNC_LIST[@]}"; do
+        echo "  ✓ $item"
+    done
+    echo ""
+    echo "Problem directories are preserved."
+else
+    echo ""
+    echo "❌ Sync failed!"
+    exit 1
+fi

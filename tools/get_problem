@@ -1,0 +1,27 @@
+#!/bin/bash
+# Find the program root directory (where tools/ is located)
+SCRIPT_PATH="${BASH_SOURCE[0]}"
+SCRIPT_DIR="$(cd "$(dirname "$SCRIPT_PATH")" && pwd)"
+
+# If fetch_problem.py exists in the same dir, use it; otherwise search upwards
+if [ -f "$SCRIPT_DIR/fetch_problem.py" ]; then
+    TOOLS_DIR="$SCRIPT_DIR"
+else
+    # Search upwards for tools directory containing fetch_problem.py
+    DIR="$(pwd)"
+    while [ "$DIR" != "/" ]; do
+        if [ -f "$DIR/tools/fetch_problem.py" ]; then
+            TOOLS_DIR="$DIR/tools"
+            break
+        fi
+        DIR="$(dirname "$DIR")"
+    done
+fi
+
+if [ -z "$TOOLS_DIR" ]; then
+    echo "Error: Could not find tools/fetch_problem.py"
+    exit 1
+fi
+
+PROB_ID=$(basename "$(pwd)")
+python3 "$TOOLS_DIR/fetch_problem.py" problem "$PROB_ID" --target_dir .

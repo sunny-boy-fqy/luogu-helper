@@ -1,0 +1,42 @@
+#!/bin/bash
+# OI Problem setup script
+# Usage: new <PROBLEM_ID_OR_FOLDER_NAME>
+
+if [ -z "$1" ]; then
+    echo "Usage: new <PROBLEM_ID_OR_FOLDER_NAME>"
+    exit 1
+fi
+
+TARGET="$1"
+PROB_ID=$(echo "$1" | tr '[:lower:]' '[:upper:]')
+
+# Define paths (dynamic based on script location)
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROG_DIR="$SCRIPT_DIR"
+STD_DIR="$PROG_DIR/std"
+FETCH_SCRIPT="$PROG_DIR/tools/fetch_problem.py"
+
+# Check if it's a problem ID
+if [[ $PROB_ID =~ ^[PBUT][0-9]+$ ]] || [[ $PROB_ID =~ ^(CF)?[0-9]+[A-Z][0-9]*$ ]] || [[ $1 =~ _ ]]; then
+    echo "Detected problem ID: $1"
+    
+    if [ -d "$PROG_DIR/$1" ]; then
+        echo "Error: Directory $1 already exists."
+        exit 1
+    fi
+    
+    cp -a "$STD_DIR" "$PROG_DIR/$1"
+    python3 "$FETCH_SCRIPT" samples "$1" --target_dir "$PROG_DIR/$1" "${@:2}"
+    
+    if [ $? -eq 0 ]; then
+        echo "Successfully set up $PROB_ID"
+        echo "Please run: cd $PROG_DIR/$1"
+    else
+        echo "Failed to fetch samples, but directory created."
+    fi
+else
+    echo "Creating directory: "
+    cp -a "$STD_DIR" "$PROG_DIR/"
+    echo "Successfully set up "
+    echo "Please run: cd $PROG_DIR/"
+fi
