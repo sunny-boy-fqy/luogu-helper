@@ -157,7 +157,35 @@ cp /path/to/solution.cpp std.cpp
 - 第一个错误出现时停止，并保存失败样例到 `fail.in`
 - 每 10 组测试报告进度
 
-### 6. 数据生成器：`./gen`
+### 6. 代码打包：`./bundle`
+**注意：使用该功能需要xsel或者xclip**
+将你的代码及其引用的本地头文件打包成一个文件，方便提交到在线评测系统：
+```bash
+cd P5736
+./bundle          # 打包 main.cpp，自动展开 include 文件夹中的头文件
+./bundle my.cpp   # 打包指定的源文件
+```
+
+**打包功能**：
+- 自动展开 `#include "..."` 引用的本地头文件（从 `include/` 目录或相对路径查找）
+- 自动移除 `#pragma once` 避免重复定义问题
+- 自动复制打包后的代码到剪贴板（支持 Linux、macOS、Windows）
+- 如果无法复制到剪贴板，则保存为 `bundled_code.cpp`
+
+**使用示例**：
+```cpp
+// main.cpp
+#include "../include/modint.hpp"
+#include "../include/qio.hpp"
+
+int main() {
+    // 你的代码...
+}
+```
+
+运行 `./bundle` 后，生成的代码将包含 `modint.hpp` 和 `qio.hpp` 的全部内容。（会复制到剪贴板中）
+
+### 7. 数据生成器：`./gen`
 
 生成自定义测试数据：
 ```bash
@@ -369,6 +397,52 @@ int main() {
 | **几何** | `random_points()`, `random_convex_polygon()`, `random_simple_polygon()`, `polygon_area2()`, `polygon_perimeter()` |
 | **输出** | `print_array()`, `print_matrix()`, `print_graph()`, `print_tree()`, `print_points()`, `print_polygon()` |
 
+## 头文件库（include/）
+
+`include/` 目录包含了一系列常用的算法竞赛头文件库，可以直接在代码中使用：
+
+| 头文件 | 功能描述 |
+|--------|----------|
+| `qio.hpp` | 快速 IO 工具，包含快速读写、内存映射等优化 |
+| `modint.hpp` | 模整数类模板，支持常见的模运算操作 |
+| `datagen.hpp` | 数据生成库（详见上文） |
+| `bint.hpp` | 高精度整数（大整数）运算 |
+| `AC_trie.hpp` | AC 自动机，用于多模式字符串匹配 |
+| `BIT.hpp` | 树状数组（Binary Indexed Tree） |
+| `treap.hpp` | 树堆（Treap）平衡二叉搜索树 |
+| `LCT.hpp` | 动态树（Link-Cut Tree） |
+| `Dij.hpp` | Dijkstra 最短路算法封装 |
+| `mat.hpp` | 矩阵运算库 |
+| `comb.hpp` | 组合数学工具，包含阶乘、逆元等 |
+| `geometry.hpp` | 计算几何工具 |
+| `fast_sort.hpp` | 快速排序相关工具 |
+| `math_constants.hpp` | 数学常数 |
+| `ai.hpp` | AI/机器学习相关工具 |
+
+**使用方法**：
+```cpp
+#include "../include/modint.hpp"
+#include "../include/qio.hpp"//使用后默认不能与scanf printf混用。
+
+using mint = modint<1000000007>;
+
+int main() {
+    
+    int n;
+    cin >> n;//已经被替换为高速版本
+    
+    mint ans = 1;
+    for (int i = 1; i <= n; i++) {
+        ans *= i;
+    }
+    cout << ans << '\n';
+    
+    return 0;
+}
+```
+
+提交代码前，使用 `./bundle` 命令将头文件内容打包到代码中。
+
 ## 目录结构
 
 ```
@@ -379,13 +453,26 @@ luogu-helper/
 ├── std/
 │   ├── main.cpp       # 默认代码模板
 │   └── gen.cpp        # 默认数据生成器模板
-├── include/
+├── include/           # 头文件库
 │   ├── datagen.hpp    # 数据生成库
 │   ├── qio.hpp        # 快速 IO 工具
-│   └── ...            # 其他算法模板
+│   ├── modint.hpp     # 模整数类
+│   ├── bint.hpp       # 高精度整数
+│   ├── AC_trie.hpp    # AC 自动机
+│   ├── BIT.hpp        # 树状数组
+│   ├── treap.hpp      # 树堆
+│   ├── LCT.hpp        # 动态树
+│   ├── Dij.hpp        # Dijkstra 算法
+│   ├── mat.hpp        # 矩阵运算
+│   ├── comb.hpp       # 组合数学
+│   ├── geometry.hpp   # 计算几何
+│   ├── fast_sort.hpp  # 快速排序
+│   ├── math_constants.hpp  # 数学常数
+│   └── ai.hpp         # AI 工具
 ├── tools/
 │   ├── judge          # 本地评测器
 │   ├── checker        # 对排工具
+│   ├── bundle         # 代码打包（展开头文件）
 │   ├── get_problem    # 获取题目描述
 │   ├── get_solve      # 获取 AC 题解
 │   └── fetch_problem.py

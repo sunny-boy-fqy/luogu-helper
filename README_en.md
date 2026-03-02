@@ -155,7 +155,35 @@ cp /path/to/solution.cpp std.cpp
 - Stops at first mismatch and saves failing case to `fail.in`
 - Progress report every 10 tests
 
-### 6. Data Generator: `./gen`
+### 6. Bundle Code: `./bundle`
+
+Bundle your code with all referenced local headers into a single file, making it easy to submit to online judges:
+```bash
+cd P5736
+./bundle          # Bundle main.cpp, automatically expand headers from include/
+./bundle my.cpp   # Bundle a specific source file
+```
+
+**Bundle Features:**
+- Automatically expands `#include "..."` references to local headers (searches in `include/` directory or relative paths)
+- Automatically removes `#pragma once` to avoid redefinition issues
+- Copies the bundled code to clipboard automatically (supports Linux, macOS, Windows)
+- If clipboard access fails, saves to `bundled_code.cpp`
+
+**Example:**
+```cpp
+// main.cpp
+#include "../include/modint.hpp"
+#include "../include/qio.hpp"
+
+int main() {
+    // Your code...
+}
+```
+
+After running `./bundle`, the generated code will contain the full content of `modint.hpp` and `qio.hpp`.
+
+### 7. Data Generator: `./gen`
 
 Generate custom test data:
 ```bash
@@ -367,6 +395,54 @@ int main() {
 | **Geometry** | `random_points()`, `random_convex_polygon()`, `random_simple_polygon()`, `polygon_area2()`, `polygon_perimeter()` |
 | **Output** | `print_array()`, `print_matrix()`, `print_graph()`, `print_tree()`, `print_points()`, `print_polygon()` |
 
+## Header Libraries (include/)
+
+The `include/` directory contains a collection of commonly used competitive programming header libraries that can be directly included in your code:
+
+| Header | Description |
+|--------|-------------|
+| `qio.hpp` | Fast IO utilities, including optimized read/write and memory mapping |
+| `modint.hpp` | Modulo integer class template supporting common modular arithmetic operations |
+| `datagen.hpp` | Data generation library (see above) |
+| `bint.hpp` | Big integer (arbitrary precision) arithmetic |
+| `AC_trie.hpp` | Aho-Corasick automaton for multi-pattern string matching |
+| `BIT.hpp` | Binary Indexed Tree (Fenwick Tree) |
+| `treap.hpp` | Treap (randomized balanced binary search tree) |
+| `LCT.hpp` | Link-Cut Tree (dynamic tree data structure) |
+| `Dij.hpp` | Dijkstra shortest path algorithm wrapper |
+| `mat.hpp` | Matrix operations library |
+| `comb.hpp` | Combinatorics utilities, including factorials and modular inverses |
+| `geometry.hpp` | Computational geometry tools |
+| `fast_sort.hpp` | Fast sorting utilities |
+| `math_constants.hpp` | Mathematical constants |
+| `ai.hpp` | AI/Machine learning utilities |
+
+**Usage:**
+```cpp
+#include "../include/modint.hpp"
+#include "../include/qio.hpp"
+
+using mint = modint<1000000007>;
+
+int main() {
+    qio::fast_input in;
+    qio::fast_output out;
+    
+    int n;
+    in >> n;
+    
+    mint ans = 1;
+    for (int i = 1; i <= n; i++) {
+        ans *= i;
+    }
+    out << ans << '\n';
+    
+    return 0;
+}
+```
+
+Before submitting, use the `./bundle` command to pack the header contents into your code.
+
 ## Directory Structure
 
 ```
@@ -377,13 +453,26 @@ luogu-helper/
 ├── std/
 │   ├── main.cpp       # Default solution template
 │   └── gen.cpp        # Default data generator template
-├── include/
+├── include/           # Header libraries
 │   ├── datagen.hpp    # Data generation library
 │   ├── qio.hpp        # Fast IO utilities
-│   └── ...            # Other algorithm templates
+│   ├── modint.hpp     # Modulo integer class
+│   ├── bint.hpp       # Big integer
+│   ├── AC_trie.hpp    # Aho-Corasick automaton
+│   ├── BIT.hpp        # Binary Indexed Tree
+│   ├── treap.hpp      # Treap
+│   ├── LCT.hpp        # Link-Cut Tree
+│   ├── Dij.hpp        # Dijkstra algorithm
+│   ├── mat.hpp        # Matrix operations
+│   ├── comb.hpp       # Combinatorics
+│   ├── geometry.hpp   # Computational geometry
+│   ├── fast_sort.hpp  # Fast sorting
+│   ├── math_constants.hpp  # Math constants
+│   └── ai.hpp         # AI utilities
 ├── tools/
 │   ├── judge          # Local judge
 │   ├── checker        # Stress test (compare with std)
+│   ├── bundle         # Bundle code (expand headers)
 │   ├── get_problem    # Fetch problem statement
 │   ├── get_solve      # Fetch AC solution
 │   └── fetch_problem.py
