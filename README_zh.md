@@ -120,6 +120,8 @@ cd P5736
 
 ### 7. Google Drive 同步：`./clear` & `./sync`
 
+这些命令允许你将模板和工具备份到 Google Drive，并在多台设备间同步。
+
 ```bash
 # 上传核心文件到 Google Drive 并清理本地题目目录
 ./clear
@@ -128,7 +130,125 @@ cd P5736
 ./sync
 ```
 
-**注意**：需要配置 `rclone` 并设置 `gdrive` 远程。
+#### 设置 rclone
+
+**步骤 1：安装 rclone**
+
+**Linux：**
+```bash
+# 方法 1：使用 snap
+sudo snap install rclone
+
+# 方法 2：下载二进制文件
+curl https://rclone.org/install.sh | sudo bash
+
+# 方法 3：使用包管理器
+# Debian/Ubuntu
+sudo apt install rclone
+
+# Fedora
+sudo dnf install rclone
+
+# Arch
+sudo pacman -S rclone
+```
+
+**macOS：**
+```bash
+# 使用 Homebrew
+brew install rclone
+
+# 或从 https://rclone.org/downloads/ 下载
+```
+
+**Windows：**
+1. 从 https://rclone.org/downloads/ 下载
+2. 解压到文件夹（如 `C:\rclone`）
+3. 添加到 PATH：系统属性 → 环境变量 → 编辑 PATH → 添加 `C:\rclone`
+4. 验证：打开 CMD，输入 `rclone version`
+
+**步骤 2：配置 Google Drive**
+
+```bash
+# 开始配置
+rclone config
+```
+
+按以下步骤操作：
+1. 输入 `n` 创建新远程
+2. 名称：`gdrive`（必须与脚本中一致）
+3. 选择 `13` 对应 Google Drive（或实际显示的编号）
+4. client_id 和 client_secret 留空（直接回车）
+5. 选择范围：`1`（完全访问权限）
+6. Root folder ID：留空
+7. Service Account：留空
+8. 编辑高级配置：`n`
+9. 使用自动配置：`y`（桌面环境）或 `n`（无图形界面/SSH）
+   - 如果选 `y`：浏览器会打开，登录 Google 并授权
+   - 如果选 `n`：访问提供的 URL，获取代码，粘贴回来
+10. 确认：`y`
+
+验证配置：
+```bash
+rclone listremotes          # 应该显示：gdrive:
+rclone lsd gdrive:          # 列出 Drive 根目录
+```
+
+**步骤 3：创建同步文件夹（可选）**
+
+默认脚本同步到 `gdrive:OI/program`。你可以创建此文件夹：
+```bash
+rclone mkdir gdrive:OI/program
+```
+
+或修改 `clear` 和 `sync` 脚本中的 `REMOTE` 变量来更改路径。
+
+**步骤 4：测试同步**
+
+```bash
+# 测试上传（试运行）
+rclone sync . gdrive:OI/program --dry-run
+
+# 测试下载（试运行）
+rclone sync gdrive:OI/program . --dry-run
+```
+
+**同步内容包括：**
+- `std/` - 模板文件
+- `tools/` - 所有脚本和工具
+- `include/` - 头文件库
+- `.vscode/` - VSCode 设置
+- `new`、`clear`、`sync` 脚本
+- 题目目录中的所有 `main.cpp`
+
+**不同步的内容：**
+- 题目目录（只同步其中的 `main.cpp`）
+- 编译后的二进制文件
+- 测试数据输出
+- 个人解答文件
+
+#### 常见问题
+
+**"gdrive not found" 错误：**
+```bash
+# 重新运行配置
+rclone config
+
+# 检查 'gdrive' 是否在列表中
+rclone listremotes
+```
+
+**Token 过期：**
+```bash
+# 刷新 token
+rclone config reconnect gdrive:
+```
+
+**速率限制：**
+Google Drive 有 API 限制。如果触发限制，等待几分钟或在同步命令中添加 `--tpslimit 1`。
+
+**大文件：**
+对于超过 100MB 的文件，rclone 可能需要特殊处理。使用 `--drive-chunk-size 128M` 参数。
 
 ## 数据生成库
 

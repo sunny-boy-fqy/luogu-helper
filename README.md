@@ -118,6 +118,8 @@ Customize `gen.cpp` to generate problem-specific data. See `std/gen.cpp` for exa
 
 ### 7. Sync with Google Drive: `./clear` & `./sync`
 
+These commands allow you to backup your templates and tools to Google Drive, and sync them across multiple devices.
+
 ```bash
 # Upload core files to Google Drive and clean up local problem dirs
 ./clear
@@ -126,7 +128,125 @@ Customize `gen.cpp` to generate problem-specific data. See `std/gen.cpp` for exa
 ./sync
 ```
 
-**Note:** Requires `rclone` configured with a `gdrive` remote.
+#### Setting up rclone
+
+**Step 1: Install rclone**
+
+**Linux:**
+```bash
+# Method 1: Using snap
+sudo snap install rclone
+
+# Method 2: Download binary
+curl https://rclone.org/install.sh | sudo bash
+
+# Method 3: Using package manager
+# Debian/Ubuntu
+sudo apt install rclone
+
+# Fedora
+sudo dnf install rclone
+
+# Arch
+sudo pacman -S rclone
+```
+
+**macOS:**
+```bash
+# Using Homebrew
+brew install rclone
+
+# Or download from https://rclone.org/downloads/
+```
+
+**Windows:**
+1. Download from https://rclone.org/downloads/
+2. Extract to a folder (e.g., `C:\rclone`)
+3. Add to PATH: Open System Properties → Environment Variables → Edit PATH → Add `C:\rclone`
+4. Verify: Open CMD and type `rclone version`
+
+**Step 2: Configure Google Drive**
+
+```bash
+# Start configuration
+rclone config
+```
+
+Follow these steps:
+1. Type `n` for new remote
+2. Name: `gdrive` (must match what scripts expect)
+3. Select `13` for Google Drive (or the corresponding number)
+4. Leave client_id and client_secret empty (press Enter)
+5. Select scope: `1` (Full access)
+6. Root folder ID: leave empty
+7. Service Account: leave empty
+8. Edit advanced config: `n`
+9. Use auto config: `y` (for desktop) or `n` (for headless/SSH)
+   - If `y`: Browser will open, log in to Google and authorize
+   - If `n`: Follow the URL provided, get code, paste back
+10. Confirm: `y`
+
+Verify configuration:
+```bash
+rclone listremotes          # Should show: gdrive:
+rclone lsd gdrive:          # List your Drive root
+```
+
+**Step 3: Create sync folder (optional)**
+
+By default, scripts sync to `gdrive:OI/program`. You can create this folder:
+```bash
+rclone mkdir gdrive:OI/program
+```
+
+Or change the path in `clear` and `sync` scripts by editing the `REMOTE` variable.
+
+**Step 4: Test sync**
+
+```bash
+# Test upload (dry run)
+rclone sync . gdrive:OI/program --dry-run
+
+# Test download (dry run)
+rclone sync gdrive:OI/program . --dry-run
+```
+
+**What gets synced:**
+- `std/` - Templates
+- `tools/` - All scripts and utilities
+- `include/` - Header libraries
+- `.vscode/` - VSCode settings
+- `new`, `clear`, `sync` scripts
+- All `main.cpp` files in problem directories
+
+**What doesn't get synced:**
+- Problem directories (only `main.cpp` inside them)
+- Compiled binaries
+- Test data outputs
+- Personal solution files
+
+#### Troubleshooting
+
+**"gdrive not found" error:**
+```bash
+# Re-run config
+rclone config
+
+# Check if 'gdrive' is in the list
+rclone listremotes
+```
+
+**Token expired:**
+```bash
+# Refresh token
+rclone config reconnect gdrive:
+```
+
+**Rate limiting:**
+Google Drive has API limits. If you hit them, wait a few minutes or add `--tpslimit 1` to sync commands.
+
+**Large files:**
+For files > 100MB, rclone may need special handling. Use `--drive-chunk-size 128M` flag.
 
 ## Data Generation Library
 
