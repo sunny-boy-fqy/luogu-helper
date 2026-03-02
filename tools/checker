@@ -66,7 +66,7 @@ trap "rm -rf $TEMP_DIR" EXIT
 # Compile programs
 echo "Compiling..."
 echo "  - gen.cpp"
-if ! g++ -std=c++17 -O2 "$PROB_DIR/gen.cpp" -o "$TEMP_DIR/gen" 2>&1; then
+if ! g++ -w -std=c++17 -O2 "$PROB_DIR/gen.cpp" -o "$TEMP_DIR/gen" 2>&1; then
     echo -e "${RED}Error: Failed to compile gen.cpp${NC}"
     exit 1
 fi
@@ -78,7 +78,7 @@ if ! g++ -std=c++17 -O2 "$PROB_DIR/main.cpp" -o "$TEMP_DIR/main" 2>&1; then
 fi
 
 echo "  - std.cpp"
-if ! g++ -std=c++17 -O2 "$PROB_DIR/std.cpp" -o "$TEMP_DIR/std" 2>&1; then
+if ! g++ -w -std=c++17 -O2 "$PROB_DIR/std.cpp" -o "$TEMP_DIR/std" 2>&1; then
     echo -e "${RED}Error: Failed to compile std.cpp${NC}"
     exit 1
 fi
@@ -134,7 +134,8 @@ for i in $(seq 1 $NUM_TESTS); do
         # Save failing test case
         cp "$TEMP_DIR/input.txt" "$PROB_DIR/fail.in"
         cp "$TEMP_DIR/output_std.txt" "$PROB_DIR/fail.out"
-        echo "Failing test saved to: fail.in, fail.out"
+        cp "$TEMP_DIR/output_main.txt" "$PROB_DIR/fail.ans"
+        echo "Failing test saved to: fail.in, fail.out, fail.ans"
         FAILED=1
         break
     fi
