@@ -7,6 +7,7 @@ U*/
 !tools/
 !include/
 !.vscode/
+!.github/
 
 # Ignore compiled binaries
 *.exe
