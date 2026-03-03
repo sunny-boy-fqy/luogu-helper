@@ -2,40 +2,24 @@
 REM Get solution from Luogu
 REM Usage: get_solve.bat
 
-REM Find Python
-set PYTHON=
-where python >nul 2>&1
-if %errorlevel%==0 set PYTHON=python
-if not defined PYTHON (
-    where py >nul 2>&1
-    if %errorlevel%==0 set PYTHON=py
-)
-if not defined PYTHON (
-    echo Error: Python not found! Please install Python or add to PATH.
-    exit /b 1
-)
-
 setlocal
 
-REM Get script directory
+REM Get script directory (use %~dp0 directly)
 set SCRIPT_DIR=%~dp0
-set SCRIPT_DIR=%SCRIPT_DIR:~0,-1%
-for %%i in ("%SCRIPT_DIR%") do set TOOLS_DIR=%%~dpi
-set TOOLS_DIR=%TOOLS_DIR:~0,-1%
 
-REM Check if fetch_problem.py exists
-set FETCH_SCRIPT=%TOOLS_DIR%\tools\fetch_problem.py
-if not exist "%FETCH_SCRIPT%" (
-    echo Error: Could not find fetch_problem.py
+REM Check if fetch_problem.exe exists
+set FETCH_EXE=%SCRIPT_DIR%fetch_problem.exe
+if not exist "%FETCH_EXE%" (
+    echo Error: fetch_problem.exe not found!
+    echo Please ensure you downloaded the complete Windows release package.
     exit /b 1
 )
 
-:found
 REM Get problem ID from current directory name
 for %%I in ("%cd%") do set PROB_ID=%%~nxI
 
 echo Fetching solution for %PROB_ID%...
-%PYTHON% "%FETCH_SCRIPT%" solve "%PROB_ID%" --target_dir .
+"%FETCH_EXE%" solve "%PROB_ID%" --target_dir .
 if %errorlevel% neq 0 (
     echo Failed to fetch solution
     exit /b 1

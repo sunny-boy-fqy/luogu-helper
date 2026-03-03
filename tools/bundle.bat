@@ -3,19 +3,6 @@ REM Bundle script for Windows - expand local includes into single file
 REM Usage: bundle.bat [source_file]
 REM   source_file: File to bundle (default: main.cpp)
 
-REM Find Python
-set PYTHON=
-where python >nul 2>&1
-if %errorlevel%==0 set PYTHON=python
-if not defined PYTHON (
-    where py >nul 2>&1
-    if %errorlevel%==0 set PYTHON=py
-)
-if not defined PYTHON (
-    echo Error: Python not found! Please install Python or add to PATH.
-    exit /b 1
-)
-
 setlocal enabledelayedexpansion
 
 REM Get the directory where this script is located
@@ -32,8 +19,16 @@ if not exist "%SOURCE_FILE%" (
 
 set OUTPUT_FILE=bundled_code.cpp
 
-REM Use Python to do the bundling (cross-platform)
-%PYTHON% "%SCRIPT_DIR%bundle.py" "%SOURCE_FILE%"
+REM Check if bundle.exe exists
+set BUNDLE_EXE=%SCRIPT_DIR%bundle.exe
+if not exist "%BUNDLE_EXE%" (
+    echo Error: bundle.exe not found!
+    echo Please ensure you downloaded the complete Windows release package.
+    exit /b 1
+)
+
+REM Use executable to do the bundling
+"%BUNDLE_EXE%" "%SOURCE_FILE%"
 if %errorlevel% neq 0 (
     echo Error: Bundling failed
     exit /b 1

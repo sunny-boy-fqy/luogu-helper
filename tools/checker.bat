@@ -5,7 +5,7 @@ REM Usage: checker.bat [num_tests] [timeout_seconds]
 REM   num_tests: Number of test cases to run (default: 100)
 REM   timeout_seconds: Timeout for each test (default: 2)
 
-REM Find Python (for get_solve)
+REM Find Python (for get_solve if needed)
 set PYTHON=
 where python >nul 2>&1
 if %errorlevel%==0 set PYTHON=python
@@ -48,7 +48,14 @@ if not exist "%PROB_DIR%\main.cpp" (
 if not exist "%PROB_DIR%\std.cpp" (
     echo Warning: std.cpp not found!
     echo Attempting to fetch from Luogu...
-    if exist "%TOOLS_DIR%get_solve.bat" (
+    
+    REM Check if get_solve.exe exists
+    set GET_SOLVE_EXE=%TOOLS_DIR%get_solve.exe
+    if exist "%GET_SOLVE_EXE%" (
+        pushd "%PROB_DIR%"
+        call "%GET_SOLVE_EXE%"
+        popd
+    ) else if exist "%TOOLS_DIR%get_solve.bat" (
         pushd "%PROB_DIR%"
         call "%TOOLS_DIR%get_solve.bat"
         popd

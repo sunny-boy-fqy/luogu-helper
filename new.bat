@@ -8,19 +8,6 @@ if "%~1"=="" (
     exit /b 1
 )
 
-REM Find Python
-set PYTHON=
-where python >nul 2>&1
-if %errorlevel%==0 set PYTHON=python
-if not defined PYTHON (
-    where py >nul 2>&1
-    if %errorlevel%==0 set PYTHON=py
-)
-if not defined PYTHON (
-    echo Error: Python not found! Please install Python or add to PATH.
-    exit /b 1
-)
-
 set TARGET=%~1
 set PROB_ID=%TARGET%
 
@@ -74,15 +61,16 @@ REM Create target directory first
 mkdir "%SCRIPT_DIR%%TARGET%" 2>nul
 xcopy /E /I /Q "%STD_DIR%" "%SCRIPT_DIR%%TARGET%\" >nul 2>&1
 
-REM Check if fetch_problem.py exists in tools directory
-set FETCH_SCRIPT=%SCRIPT_DIR%tools\fetch_problem.py
-if not exist "%FETCH_SCRIPT%" (
-    echo Error: fetch_problem.py not found at %FETCH_SCRIPT%
+REM Check if fetch_problem.exe exists
+set FETCH_EXE=%SCRIPT_DIR%tools\fetch_problem.exe
+if not exist "%FETCH_EXE%" (
+    echo Error: fetch_problem.exe not found at %FETCH_EXE%
+    echo Please ensure you downloaded the complete Windows release package.
     exit /b 1
 )
 
 echo Fetching samples from Luogu...
-%PYTHON% "%FETCH_SCRIPT%" samples %TARGET% --target_dir "%SCRIPT_DIR%%TARGET%"
+"%FETCH_EXE%" samples %TARGET% --target_dir "%SCRIPT_DIR%%TARGET%"
 
 if %errorlevel%==0 (
     echo Successfully set up %PROB_ID%
