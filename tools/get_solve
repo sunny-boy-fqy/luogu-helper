@@ -1,27 +1,34 @@
 #!/bin/bash
-# Find the program root directory (where tools/ is located)
-SCRIPT_PATH="${BASH_SOURCE[0]}"
-SCRIPT_DIR="$(cd "$(dirname "$SCRIPT_PATH")" && pwd)"
+# Get solution from Luogu
+# Usage: ./get_solve
 
-# If fetch_problem.py exists in the same dir, use it; otherwise search upwards
-if [ -f "$SCRIPT_DIR/fetch_problem.py" ]; then
-    TOOLS_DIR="$SCRIPT_DIR"
-else
-    # Search upwards for tools directory containing fetch_problem.py
-    DIR="$(pwd)"
-    while [ "$DIR" != "/" ]; do
-        if [ -f "$DIR/tools/fetch_problem.py" ]; then
-            TOOLS_DIR="$DIR/tools"
-            break
-        fi
-        DIR="$(dirname "$DIR")"
-    done
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Check if fetch_problem executable exists
+FETCH_EXE="$SCRIPT_DIR/fetch_problem"
+if [ ! -f "$FETCH_EXE" ]; then
+    FETCH_EXE="$SCRIPT_DIR/../tools/fetch_problem"
 fi
-
-if [ -z "$TOOLS_DIR" ]; then
-    echo "Error: Could not find tools/fetch_problem.py"
+if [ ! -f "$FETCH_EXE" ]; then
+    echo "Error: fetch_problem executable not found!"
+    echo "Searched in:"
+    echo "  - $SCRIPT_DIR/fetch_problem"
+    echo "  - $SCRIPT_DIR/../tools/fetch_problem"
+    echo "Please ensure you downloaded the complete release package."
     exit 1
 fi
 
+echo "Using: $FETCH_EXE"
+
+# Get problem ID from current directory name
 PROB_ID=$(basename "$(pwd)")
-python3 "$TOOLS_DIR/fetch_problem.py" solve "$PROB_ID" --target_dir .
+
+echo "Fetching solution for $PROB_ID..."
+"$FETCH_EXE" solve "$PROB_ID" --target_dir .
+
+if [ $? -eq 0 ]; then
+    echo "Successfully saved std.cpp"
+else
+    echo "Failed to fetch solution"
+    exit 1
+fi

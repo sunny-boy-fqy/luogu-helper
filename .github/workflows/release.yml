@@ -35,8 +35,14 @@ jobs:
           cp -r .vscode release/luogu-helper/
           cp .gitignore release/luogu-helper/
           cp new clear sync release/luogu-helper/
+          cp config_cookie release/luogu-helper/
+          chmod +x release/luogu-helper/config_cookie
           cp new.bat clear.bat sync.bat release/luogu-helper/
           cp tools/*.bat release/luogu-helper/tools/
+          # Copy built executables
+          cp dist/fetch_problem release/luogu-helper/tools/
+          cp dist/bundle release/luogu-helper/tools/
+          chmod +x release/luogu-helper/tools/fetch_problem release/luogu-helper/tools/bundle
           cp README.md README_en.md README_zh.md README_windows.md release/luogu-helper/ 2>/dev/null || true
           cd release && tar -czvf luogu-helper-linux.tar.gz luogu-helper
       
@@ -80,6 +86,7 @@ jobs:
           Copy-Item -Force new release\luogu-helper\
           Copy-Item -Force clear release\luogu-helper\
           Copy-Item -Force sync release\luogu-helper\
+          Copy-Item -Force config_cookie.bat release\luogu-helper\
           Copy-Item -Force new.bat release\luogu-helper\
           Copy-Item -Force clear.bat release\luogu-helper\
           Copy-Item -Force sync.bat release\luogu-helper\

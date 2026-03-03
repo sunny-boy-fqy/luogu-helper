@@ -61,7 +61,7 @@ REM Create target directory first
 mkdir "%SCRIPT_DIR%%TARGET%" 2>nul
 xcopy /E /I /Q "%STD_DIR%" "%SCRIPT_DIR%%TARGET%\" >nul 2>&1
 
-REM Check if fetch_problem.exe exists in tools directory
+REM Check if fetch_problem.exe exists in multiple locations
 set FETCH_EXE=%SCRIPT_DIR%tools\fetch_problem.exe
 if not exist "%FETCH_EXE%" (
     set FETCH_EXE=%SCRIPT_DIR%fetch_problem.exe
@@ -85,6 +85,8 @@ if %errorlevel%==0 (
     echo Please run: cd %SCRIPT_DIR%%TARGET%
 ) else (
     echo Failed to fetch samples, but directory created.
+    echo You may need to configure LUOGU_COOKIE and _uid for private problems.
+    echo Run 'config_cookie.bat' to set up your cookie and uid.
 )
 
 set TARGET=%~1

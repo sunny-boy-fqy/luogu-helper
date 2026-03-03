@@ -1,42 +1,80 @@
 #!/bin/bash
-# OI Problem setup script
-# Usage: new <PROBLEM_ID_OR_FOLDER_NAME>
+# OI Problem setup script for Linux/macOS
+# Usage: ./new <PROBLEM_ID_OR_FOLDER_NAME>
 
-if [ -z "$1" ]; then
-    echo "Usage: new <PROBLEM_ID_OR_FOLDER_NAME>"
+if [ $# -eq 0 ]; then
+    echo "Usage: ./new <PROBLEM_ID_OR_FOLDER_NAME>"
     exit 1
 fi
 
 TARGET="$1"
-PROB_ID=$(echo "$1" | tr '[:lower:]' '[:upper:]')
+PROB_ID="$TARGET"
 
-# Define paths (dynamic based on script location)
+# Get script directory
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROG_DIR="$SCRIPT_DIR"
-STD_DIR="$PROG_DIR/std"
-FETCH_SCRIPT="$PROG_DIR/tools/fetch_problem.py"
+STD_DIR="$SCRIPT_DIR/std"
 
 # Check if it's a problem ID
-if [[ $PROB_ID =~ ^[PBUT][0-9]+$ ]] || [[ $PROB_ID =~ ^(CF)?[0-9]+[A-Z][0-9]*$ ]] || [[ $1 =~ _ ]]; then
-    echo "Detected problem ID: $1"
-    
-    if [ -d "$PROG_DIR/$1" ]; then
-        echo "Error: Directory $1 already exists."
+if [[ "$PROB_ID" =~ ^[PBTU][0-9]*$ ]] || [[ "$PROB_ID" =~ ^[0-9]+[A-Z]$ ]] || [[ "$PROB_ID" == *"_"* ]]; then
+    IS_PROBLEM_ID=true
+else
+    IS_PROBLEM_ID=false
+fi
+
+if [ "$IS_PROBLEM_ID" = false ]; then
+    # Not a problem ID, just create a directory
+    echo "Creating directory: $TARGET"
+    if [ ! -d "$STD_DIR" ]; then
+        echo "Error: std directory not found at $STD_DIR"
         exit 1
     fi
-    
-    cp -a "$STD_DIR" "$PROG_DIR/$1"
-    python3 "$FETCH_SCRIPT" samples "$1" --target_dir "$PROG_DIR/$1" "${@:2}"
-    
-    if [ $? -eq 0 ]; then
-        echo "Successfully set up $PROB_ID"
-        echo "Please run: cd $PROG_DIR/$1"
-    else
-        echo "Failed to fetch samples, but directory created."
-    fi
+    mkdir -p "$SCRIPT_DIR/$TARGET"
+    cp -r "$STD_DIR"/* "$SCRIPT_DIR/$TARGET/"
+    echo "Successfully set up $TARGET"
+    echo "Please run: cd $SCRIPT_DIR/$TARGET"
+    exit 0
+fi
+
+echo "Detected problem ID: $TARGET"
+
+if [ -d "$SCRIPT_DIR/$TARGET" ]; then
+    echo "Error: Directory $TARGET already exists."
+    exit 1
+fi
+
+if [ ! -d "$STD_DIR" ]; then
+    echo "Error: std directory not found at $STD_DIR"
+    exit 1
+fi
+
+# Create target directory
+mkdir -p "$SCRIPT_DIR/$TARGET"
+cp -r "$STD_DIR"/* "$SCRIPT_DIR/$TARGET/"
+
+# Check if fetch_problem executable exists in tools directory
+FETCH_EXE="$SCRIPT_DIR/tools/fetch_problem"
+if [ ! -f "$FETCH_EXE" ]; then
+    FETCH_EXE="$SCRIPT_DIR/fetch_problem"
+fi
+if [ ! -f "$FETCH_EXE" ]; then
+    echo "Error: fetch_problem executable not found!"
+    echo "Searched in:"
+    echo "  - $SCRIPT_DIR/tools/fetch_problem"
+    echo "  - $SCRIPT_DIR/fetch_problem"
+    echo "Please ensure you downloaded the complete release package."
+    exit 1
+fi
+
+echo "Using: $FETCH_EXE"
+
+echo "Fetching samples from Luogu..."
+"$FETCH_EXE" samples "$TARGET" --target_dir "$SCRIPT_DIR/$TARGET"
+
+if [ $? -eq 0 ]; then
+    echo "Successfully set up $PROB_ID"
+    echo "Please run: cd $SCRIPT_DIR/$TARGET"
 else
-    echo "Creating directory: "
-    cp -a "$STD_DIR" "$PROG_DIR/"
-    echo "Successfully set up "
-    echo "Please run: cd $PROG_DIR/"
+    echo "Failed to fetch samples, but directory created."
+    echo "You may need to configure LUOGU_COOKIE and _uid for private problems."
+    echo "Run './config_cookie' to set up your cookie and uid."
 fi

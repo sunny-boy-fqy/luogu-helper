@@ -1,5 +1,56 @@
 #!/bin/bash
-# Get the directory where this script is located (resolve symlinks)
-SCRIPT_SOURCE="$(readlink -f "${BASH_SOURCE[0]}")"
-SCRIPT_DIR="$(cd "$(dirname "$SCRIPT_SOURCE")" && pwd)"
-python3 "$SCRIPT_DIR/bundle.py" "$@"
+# Bundle script for Linux/macOS - expand local includes into single file
+# Usage: ./bundle [source_file]
+#   source_file: File to bundle (default: main.cpp)
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Default source file
+SOURCE_FILE="main.cpp"
+if [ $# -gt 0 ]; then
+    SOURCE_FILE="$1"
+fi
+
+if [ ! -f "$SOURCE_FILE" ]; then
+    echo "Error: $SOURCE_FILE not found!"
+    exit 1
+fi
+
+OUTPUT_FILE="bundled_code.cpp"
+
+# Check if bundle executable exists
+BUNDLE_EXE="$SCRIPT_DIR/bundle"
+if [ ! -f "$BUNDLE_EXE" ]; then
+    BUNDLE_EXE="$SCRIPT_DIR/../tools/bundle"
+fi
+if [ ! -f "$BUNDLE_EXE" ]; then
+    echo "Error: bundle executable not found!"
+    echo "Searched in:"
+    echo "  - $SCRIPT_DIR/bundle"
+    echo "  - $SCRIPT_DIR/../tools/bundle"
+    echo "Please ensure you downloaded the complete release package."
+    exit 1
+fi
+
+echo "Using: $BUNDLE_EXE"
+
+# Use executable to do the bundling
+"$BUNDLE_EXE" "$SOURCE_FILE"
+
+if [ $? -eq 0 ]; then
+    echo "Code bundled to $OUTPUT_FILE"
+    
+    # Try to copy to clipboard
+    if command -v xclip > /dev/null; then
+        cat "$OUTPUT_FILE" | xclip -selection clipboard
+        echo "Copied to clipboard!"
+    elif command -v pbcopy > /dev/null; then
+        cat "$OUTPUT_FILE" | pbcopy
+        echo "Copied to clipboard!"
+    else
+        echo "Could not copy to clipboard. Install xclip or pbcopy, or use Ctrl+C manually."
+    fi
+else
+    echo "Error: Bundling failed"
+    exit 1
+fi

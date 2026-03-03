@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-# build_executables.py - Build standalone executables for Windows
+# build_executables.py - Build standalone executables for Windows and Linux
 import os
 import sys
 import subprocess
 
 
-def build_executable(script_path, output_name):
+def build_executable(script_path, output_name, is_windows=False):
     """Build standalone executable using PyInstaller with hidden imports"""
     cmd = [
         "pyinstaller",
@@ -27,6 +27,10 @@ def build_executable(script_path, output_name):
         "re",
         script_path,
     ]
+
+    # Add console flag for Windows to hide console window for GUI apps (not needed here)
+    if is_windows:
+        cmd.append("--console")  # Keep console for command-line tools
 
     print(f"Building {output_name}...")
     result = subprocess.run(cmd, capture_output=True, text=True)
@@ -54,7 +58,8 @@ if __name__ == "__main__":
 
     success = True
     for script_path, output_name in scripts:
-        if not build_executable(script_path, output_name):
+        # Build for current platform
+        if not build_executable(script_path, output_name, sys.platform == "win32"):
             success = False
 
     if success:
