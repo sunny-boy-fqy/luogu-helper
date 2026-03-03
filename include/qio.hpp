@@ -1,3 +1,8 @@
+/*
+Fast I/O library - Cross platform (Linux/Windows/macOS)
+Uses mmap on Linux, file mapping on Windows, and fallback to buffered I/O
+*/
+
 #ifndef QIO_HPP
 #define QIO_HPP
 
@@ -11,9 +16,15 @@
 #include <cmath>
 #include <sys/stat.h>
 #include "bint.hpp"
+
+#ifdef _WIN32
+#include <windows.h>
+#include <io.h>
+#else
+#include <unistd.h>
 #ifdef __linux__
 #include <sys/mman.h>
-#include <unistd.h>
+#endif
 #endif
 
 // ==================================================================================
@@ -58,7 +69,26 @@ private:
 
 public:
     QInStream(FILE *file = stdin) : m_p(nullptr), m_c(nullptr), m_end(nullptr), m_is_mmap(false) {
-#ifdef __linux__
+#ifdef _WIN32
+        int fd = _fileno(file);
+        struct _stat st;
+        if (_fstat(fd, &st) == 0 && st.st_size > 0) {
+            HANDLE hFile = (HANDLE)_get_osfhandle(fd);
+            if (hFile != INVALID_HANDLE_VALUE) {
+                HANDLE hMap = CreateFileMappingW(hFile, NULL, PAGE_READONLY, 0, 0, NULL);
+                if (hMap != NULL) {
+                    m_p = (char *)MapViewOfFileEx(hMap, FILE_MAP_READ, 0, 0, 0, NULL);
+                    CloseHandle(hMap);
+                    if (m_p != NULL) {
+                        m_is_mmap = true;
+                        m_c = m_p;
+                        m_end = m_p + st.st_size;
+                        return;
+                    }
+                }
+            }
+        }
+#elif defined(__linux__)
         int fd = fileno(file);
         struct stat st;
         if (fstat(fd, &st) == 0 && st.st_size > 0) {
@@ -80,7 +110,10 @@ public:
 
     ~QInStream() {
         if (m_p) {
-#ifdef __linux__
+#ifdef _WIN32
+            if (m_is_mmap) UnmapViewOfFile(m_p);
+            else
+#elif defined(__linux__)
             if (m_is_mmap) munmap(m_p, static_cast<size_t>(m_end - m_p));
             else
 #endif

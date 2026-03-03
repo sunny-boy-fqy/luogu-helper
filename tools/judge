@@ -1,23 +1,234 @@
 #!/bin/bash
 
-# Global judge wrapper
-# Auto-recompiles judge.cpp if it's newer than the binary
+# judge: Local judge for competitive programming
+# Usage: ./judge [OPTIONS]
+#   -t, --timeout SECONDS   Override time limit (default: from info file)
+#   -c, --compiler COMP     Compiler to use (default: g++)
+#   -h, --help              Show this help message
 
-# Get the directory where this script is located (resolve symlinks)
-SCRIPT_SOURCE="$(readlink -f "${BASH_SOURCE[0]}")"
-SCRIPT_DIR="$(cd "$(dirname "$SCRIPT_SOURCE")" && pwd)"
-TOOLS_DIR="$SCRIPT_DIR"
-JUDGE_CPP="$TOOLS_DIR/judge.cpp"
-JUDGE_BIN="$TOOLS_DIR/judge_bin"
+set -e
 
-if [[ ! -f "$JUDGE_BIN" ]] || [[ "$JUDGE_CPP" -nt "$JUDGE_BIN" ]]; then
-    echo "Recompiling judge..."
-    g++ "$JUDGE_CPP" -O2 -o "$JUDGE_BIN"
-    if [ $? -ne 0 ]; then
-        echo "Error: Failed to compile $JUDGE_CPP"
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
+
+# Default values
+TIMEOUT_OVERRIDE=""
+COMPILER="g++"
+EXTRA_FLAGS=""
+
+# Parse arguments
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        -t|--timeout)
+            TIMEOUT_OVERRIDE="$2"
+            shift 2
+            ;;
+        -c|--compiler)
+            COMPILER="$2"
+            shift 2
+            ;;
+        -h|--help)
+            echo "Usage: ./judge [OPTIONS]"
+            echo "Options:"
+            echo "  -t, --timeout SECONDS   Override time limit"
+            echo "  -c, --compiler COMP     Compiler to use (default: g++)"
+            echo "  -h, --help              Show this help message"
+            exit 0
+            ;;
+        *)
+            echo "Unknown option: $1"
+            exit 1
+            ;;
+    esac
+done
+
+# Check if main.cpp exists
+if [ ! -f "main.cpp" ]; then
+    echo -e "${RED}Error: main.cpp not found!${NC}"
+    exit 1
+fi
+
+# Check if data/info exists
+INFO_FILE="data/info"
+if [ ! -f "$INFO_FILE" ]; then
+    if [ -f "info" ]; then
+        INFO_FILE="info"
+    else
+        echo -e "${RED}Error: info file not found!${NC}"
+        echo "Please create data/info or info file with format: <num_tests> <time_limit_ms>"
         exit 1
     fi
 fi
 
-# Execute the judge binary in the current directory
-"$JUDGE_BIN" "$@"
+# Read info file
+read NUM_TESTS TIME_LIMIT_MS < "$INFO_FILE"
+TIME_LIMIT_SEC=$(echo "scale=2; $TIME_LIMIT_MS / 1000" | bc 2>/dev/null || echo "1")
+
+# Override timeout if specified
+if [ -n "$TIMEOUT_OVERRIDE" ]; then
+    TIME_LIMIT_SEC="$TIMEOUT_OVERRIDE"
+    TIME_LIMIT_MS=$(echo "$TIME_LIMIT_OVERRIDE * 1000" | bc 2>/dev/null || echo "1000")
+fi
+
+echo "========================================"
+echo -e "  ${BLUE}Judge${NC}: $(basename $(pwd))"
+echo "  Tests: $NUM_TESTS | Time limit: ${TIME_LIMIT_MS}ms"
+echo "========================================"
+echo ""
+
+# Compile main.cpp
+echo -e "${YELLOW}Compiling main.cpp...${NC}"
+COMPILE_OUTPUT=$($COMPILER -std=c++17 -O2 main.cpp -o /tmp/judge_main 2>&1)
+if [ $? -ne 0 ]; then
+    echo -e "${RED}Compilation Error!${NC}"
+    echo "$COMPILE_OUTPUT"
+    exit 1
+fi
+echo -e "${GREEN}Compilation successful${NC}"
+echo ""
+
+# Check for special judge
+SPJ_PATH="data/spj"
+HAS_SPJ=false
+if [ -x "$SPJ_PATH" ]; then
+    HAS_SPJ=true
+    echo -e "${YELLOW}Special judge detected${NC}"
+    echo ""
+fi
+
+# Function to normalize output (trim trailing whitespace)
+normalize_output() {
+    sed 's/[[:space:]]*$//' "$1" | sed -e :a -e '/^\n*$/{$d;N;};/\n$/ba'
+}
+
+# Run tests
+TOTAL_AC=true
+FIRST_FAILED=""
+FAILED_TEST=0
+
+for i in $(seq 1 $NUM_TESTS); do
+    INPUT_FILE="data/data${i}.in"
+    OUTPUT_FILE="data/data${i}.out"
+    USER_OUTPUT="/tmp/judge_output_${i}"
+    
+    if [ ! -f "$INPUT_FILE" ]; then
+        echo -e "${RED}Test $i: Missing input file${NC}"
+        TOTAL_AC=false
+        FAILED_TEST=$i
+        FIRST_FAILED="Missing input file: $INPUT_FILE"
+        break
+    fi
+    
+    if [ ! -f "$OUTPUT_FILE" ]; then
+        echo -e "${RED}Test $i: Missing output file${NC}"
+        TOTAL_AC=false
+        FAILED_TEST=$i
+        FIRST_FAILED="Missing output file: $OUTPUT_FILE"
+        break
+    fi
+    
+    # Run with timeout
+    START_TIME=$(date +%s%N)
+    
+    # Use timeout command (Linux) or gtimeout (macOS)
+    TIMEOUT_CMD="timeout"
+    if command -v gtimeout &> /dev/null; then
+        TIMEOUT_CMD="gtimeout"
+    fi
+    
+    $TIMEOUT_CMD $TIME_LIMIT_SEC /tmp/judge_main < "$INPUT_FILE" > "$USER_OUTPUT" 2>/dev/null
+    EXIT_CODE=$?
+    
+    END_TIME=$(date +%s%N)
+    ELAPSED_MS=$(( (END_TIME - START_TIME) / 1000000 ))
+    
+    # Check exit code
+    if [ $EXIT_CODE -eq 124 ]; then
+        # Timeout
+        echo -e "${RED}Test $i: ${YELLOW}TLE${NC} (${ELAPSED_MS}ms)"
+        TOTAL_AC=false
+        FAILED_TEST=$i
+        FIRST_FAILED="Time Limit Exceeded"
+        rm -f "$USER_OUTPUT"
+        break
+    elif [ $EXIT_CODE -ne 0 ]; then
+        # Runtime error
+        echo -e "${RED}Test $i: ${RED}RE${NC} (exit code: $EXIT_CODE)"
+        TOTAL_AC=false
+        FAILED_TEST=$i
+        FIRST_FAILED="Runtime Error (exit code: $EXIT_CODE)"
+        rm -f "$USER_OUTPUT"
+        break
+    fi
+    
+    # Check output
+    if [ "$HAS_SPJ" = true ]; then
+        # Use special judge
+        $SPJ_PATH "$INPUT_FILE" "$USER_OUTPUT" "$OUTPUT_FILE" > /dev/null 2>&1
+        SPJ_EXIT=$?
+        if [ $SPJ_EXIT -eq 0 ]; then
+            echo -e "Test $i: ${GREEN}AC${NC} (${ELAPSED_MS}ms)"
+        else
+            echo -e "${RED}Test $i: ${RED}WA${NC} (${ELAPSED_MS}ms)"
+            TOTAL_AC=false
+            FAILED_TEST=$i
+            FIRST_FAILED="Wrong Answer (SPJ)"
+            break
+        fi
+    else
+        # Compare outputs (normalize whitespace)
+        normalize_output "$USER_OUTPUT" > /tmp/judge_norm_user
+        normalize_output "$OUTPUT_FILE" > /tmp/judge_norm_ans
+        
+        if diff -q /tmp/judge_norm_user /tmp/judge_norm_ans > /dev/null 2>&1; then
+            echo -e "Test $i: ${GREEN}AC${NC} (${ELAPSED_MS}ms)"
+        else
+            echo -e "${RED}Test $i: ${RED}WA${NC} (${ELAPSED_MS}ms)"
+            TOTAL_AC=false
+            FAILED_TEST=$i
+            FIRST_FAILED="Wrong Answer"
+            
+            # Show difference
+            echo ""
+            echo "Input (first 20 lines):"
+            head -20 "$INPUT_FILE"
+            echo ""
+            echo "Your output (first 20 lines):"
+            head -20 "$USER_OUTPUT"
+            echo ""
+            echo "Expected (first 20 lines):"
+            head -20 "$OUTPUT_FILE"
+            
+            # Save failed test
+            cp "$INPUT_FILE" "fail.in"
+            cp "$USER_OUTPUT" "fail.out"
+            cp "$OUTPUT_FILE" "fail.ans"
+            echo "Failed test saved to fail.in, fail.out, fail.ans"
+            
+            rm -f "$USER_OUTPUT" /tmp/judge_norm_user /tmp/judge_norm_ans
+            break
+        fi
+    fi
+    
+    rm -f "$USER_OUTPUT"
+done
+
+# Cleanup
+rm -f /tmp/judge_main /tmp/judge_norm_user /tmp/judge_norm_ans
+
+echo ""
+echo "========================================"
+if [ "$TOTAL_AC" = true ]; then
+    echo -e "${GREEN}  All tests passed!${NC}"
+    echo "========================================"
+    exit 0
+else
+    echo -e "${RED}  Failed at test $FAILED_TEST${NC}"
+    echo -e "  Reason: $FIRST_FAILED"
+    echo "========================================"
+    exit 1
+fi
