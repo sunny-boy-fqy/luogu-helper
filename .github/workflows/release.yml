@@ -56,12 +56,25 @@ jobs:
         with:
           python-version: '3.x'
       
+      - name: Install PyInstaller
+        run: |
+          pip install pyinstaller
+      
+      - name: Build Python executables
+        run: |
+          python build_executables.py
+      
       - name: Create Windows package
         shell: pwsh
         run: |
+          # Create std_windows directory with actual files (not symlinks)
+          New-Item -ItemType Directory -Force -Path std_windows
+          Copy-Item -Force std/gen.cpp, std/main.cpp std_windows\
+          Copy-Item -Force tools/*.bat std_windows\
+          
           New-Item -ItemType Directory -Force -Path release\luogu-helper
           Copy-Item -Recurse -Force include release\luogu-helper\
-          Copy-Item -Recurse -Force std release\luogu-helper\
+          Copy-Item -Recurse -Force std_windows release\luogu-helper\std
           Copy-Item -Recurse -Force tools release\luogu-helper\
           Copy-Item -Recurse -Force .vscode release\luogu-helper\
           Copy-Item -Force new release\luogu-helper\
@@ -71,6 +84,9 @@ jobs:
           Copy-Item -Force clear.bat release\luogu-helper\
           Copy-Item -Force sync.bat release\luogu-helper\
           Copy-Item -Force tools\*.bat release\luogu-helper\tools\
+          # Copy built executables
+          Copy-Item -Force dist\fetch_problem.exe release\luogu-helper\tools\
+          Copy-Item -Force dist\bundle.exe release\luogu-helper\tools\
           Copy-Item -Force .gitignore release\luogu-helper\
           Copy-Item -Force README.md release\luogu-helper\ -ErrorAction SilentlyContinue
           Copy-Item -Force README_en.md release\luogu-helper\ -ErrorAction SilentlyContinue
