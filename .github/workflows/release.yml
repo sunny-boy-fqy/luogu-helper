@@ -64,10 +64,18 @@ jobs:
           Copy-Item -Recurse -Force std release\luogu-helper\
           Copy-Item -Recurse -Force tools release\luogu-helper\
           Copy-Item -Recurse -Force .vscode release\luogu-helper\
-          Copy-Item -Force new clear sync release\luogu-helper\
-          Copy-Item -Force *.bat release\luogu-helper\
+          Copy-Item -Force new release\luogu-helper\
+          Copy-Item -Force clear release\luogu-helper\
+          Copy-Item -Force sync release\luogu-helper\
+          Copy-Item -Force new.bat release\luogu-helper\
+          Copy-Item -Force clear.bat release\luogu-helper\
+          Copy-Item -Force sync.bat release\luogu-helper\
           Copy-Item -Force tools\*.bat release\luogu-helper\tools\
-          Copy-Item -Force .gitignore,README.md,README_en.md,README_zh.md,README_windows.md release\luogu-helper\ -ErrorAction SilentlyContinue
+          Copy-Item -Force .gitignore release\luogu-helper\
+          Copy-Item -Force README.md release\luogu-helper\ -ErrorAction SilentlyContinue
+          Copy-Item -Force README_en.md release\luogu-helper\ -ErrorAction SilentlyContinue
+          Copy-Item -Force README_zh.md release\luogu-helper\ -ErrorAction SilentlyContinue
+          Copy-Item -Force README_windows.md release\luogu-helper\ -ErrorAction SilentlyContinue
           Compress-Archive -Path release\luogu-helper -DestinationPath release\luogu-helper-windows.zip
       
       - name: Upload Windows artifact
