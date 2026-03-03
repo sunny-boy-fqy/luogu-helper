@@ -281,7 +281,6 @@ int main() {
 | `geometry.hpp` | 计算几何工具 |
 | `fast_sort.hpp` | 快速排序相关工具 |
 | `math_constants.hpp` | 数学常数 |
-| `ai.hpp` | AI/机器学习相关工具 |
 
 **使用方法**：
 ```cpp

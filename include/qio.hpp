@@ -10,7 +10,7 @@
 #include <type_traits>
 #include <cmath>
 #include <sys/stat.h>
-
+#include "bint.hpp"
 #ifdef __linux__
 #include <sys/mman.h>
 #include <unistd.h>
@@ -179,7 +179,14 @@ public:
         m_c = c;
         return *this;
     }
-
+    QInStream &operator>>(bint &x){
+        std::cin>>x;
+        return *this;
+    }
+    QInStream &operator>>(ubint &x){
+        std::cin>>x;
+        return *this;
+    }
     void tie(void*) {}
 };
 
@@ -280,7 +287,14 @@ public:
         m_c += len;
         return *this;
     }
-
+    QOutStream &operator<<(bint x){
+        std::cout<<x;
+        return *this;
+    }
+    QOutStream &operator<<(ubint x){
+        std::cout<<x;
+        return *this;
+    }
     void tie(void*) {}
 };
 
