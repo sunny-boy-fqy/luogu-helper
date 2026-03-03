@@ -19,7 +19,7 @@ if not exist "%SOURCE_FILE%" (
 
 set OUTPUT_FILE=bundled_code.cpp
 
-REM Check if bundle.exe exists in current directory or tools directory
+REM Check if bundle.exe exists in multiple locations
 set BUNDLE_EXE=%SCRIPT_DIR%bundle.exe
 if not exist "%BUNDLE_EXE%" (
     set BUNDLE_EXE=%SCRIPT_DIR%..\tools\bundle.exe

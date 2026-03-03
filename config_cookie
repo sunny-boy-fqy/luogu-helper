@@ -16,17 +16,19 @@ echo "1. Log in to https://www.luogu.com.cn"
 echo "2. Open Developer Tools (F12)"
 echo "3. Go to Application > Cookies"
 echo "4. Find _uid and __client_id values"
-echo "5. Copy the entire cookie string (all key=value pairs)"
 echo
 read -p "Press Enter to continue..."
 
 echo
-echo "Please enter your Luogu cookie string:"
-read -r COOKIE_INPUT
+echo "Please enter your __client_id:"
+read -r CLIENT_ID
+
+echo "Please enter your _uid:"
+read -r UID
 
 echo
 echo "Saving cookie to: $COOKIE_FILE"
-echo "$COOKIE_INPUT" > "$COOKIE_FILE"
+echo "__client_id=$CLIENT_ID; _uid=$UID" > "$COOKIE_FILE"
 
 echo
 echo "Cookie configured successfully!"

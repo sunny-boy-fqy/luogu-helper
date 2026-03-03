@@ -41,7 +41,7 @@ REM Create target directory first
 mkdir "%SCRIPT_DIR%%TARGET%" 2>nul
 xcopy /E /I /Q "%STD_DIR%" "%SCRIPT_DIR%%TARGET%\" >nul 2>&1
 echo Successfully set up %TARGET%
-echo Please run: cd %SCRIPT_DIR%%TARGET%
+echo Please run: cd "%SCRIPT_DIR%%TARGET%"
 exit /b 0
 
 :is_problem_id
@@ -78,11 +78,11 @@ if not exist "%FETCH_EXE%" (
 echo Using: %FETCH_EXE%
 
 echo Fetching samples from Luogu...
-"%FETCH_EXE%" samples %TARGET% --target_dir "%SCRIPT_DIR%%TARGET%"
+"%FETCH_EXE%" samples "%TARGET%" --target_dir "%SCRIPT_DIR%%TARGET%"
 
 if %errorlevel%==0 (
     echo Successfully set up %PROB_ID%
-    echo Please run: cd %SCRIPT_DIR%%TARGET%
+    echo Please run: cd "%SCRIPT_DIR%%TARGET%"
 ) else (
     echo Failed to fetch samples, but directory created.
     echo You may need to configure LUOGU_COOKIE and _uid for private problems.

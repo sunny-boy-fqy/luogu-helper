@@ -31,7 +31,7 @@ if [ "$IS_PROBLEM_ID" = false ]; then
     mkdir -p "$SCRIPT_DIR/$TARGET"
     cp -r "$STD_DIR"/* "$SCRIPT_DIR/$TARGET/"
     echo "Successfully set up $TARGET"
-    echo "Please run: cd $SCRIPT_DIR/$TARGET"
+    echo "Please run: cd \"$SCRIPT_DIR/$TARGET\""
     exit 0
 fi
 
@@ -72,7 +72,7 @@ echo "Fetching samples from Luogu..."
 
 if [ $? -eq 0 ]; then
     echo "Successfully set up $PROB_ID"
-    echo "Please run: cd $SCRIPT_DIR/$TARGET"
+    echo "Please run: cd \"$SCRIPT_DIR/$TARGET\""
 else
     echo "Failed to fetch samples, but directory created."
     echo "You may need to configure LUOGU_COOKIE and _uid for private problems."

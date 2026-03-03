@@ -7,7 +7,7 @@ setlocal
 REM Get script directory (use %~dp0 directly)
 set SCRIPT_DIR=%~dp0
 
-REM Check if fetch_problem.exe exists in current directory or tools directory
+REM Check if fetch_problem.exe exists in multiple locations
 set FETCH_EXE=%SCRIPT_DIR%fetch_problem.exe
 if not exist "%FETCH_EXE%" (
     set FETCH_EXE=%SCRIPT_DIR%..\tools\fetch_problem.exe
