@@ -19,13 +19,21 @@ if not exist "%SOURCE_FILE%" (
 
 set OUTPUT_FILE=bundled_code.cpp
 
-REM Check if bundle.exe exists
+REM Check if bundle.exe exists in current directory or tools directory
 set BUNDLE_EXE=%SCRIPT_DIR%bundle.exe
 if not exist "%BUNDLE_EXE%" (
+    set BUNDLE_EXE=%SCRIPT_DIR%..\tools\bundle.exe
+)
+if not exist "%BUNDLE_EXE%" (
     echo Error: bundle.exe not found!
+    echo Searched in:
+    echo   - %SCRIPT_DIR%bundle.exe
+    echo   - %SCRIPT_DIR%..\tools\bundle.exe
     echo Please ensure you downloaded the complete Windows release package.
     exit /b 1
 )
+
+echo Using: %BUNDLE_EXE%
 
 REM Use executable to do the bundling
 "%BUNDLE_EXE%" "%SOURCE_FILE%"
