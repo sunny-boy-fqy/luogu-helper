@@ -22,6 +22,25 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y g++
       
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      
+      - name: Install PyInstaller and dependencies
+        run: |
+          pip install pyinstaller requests
+      
+      - name: Build Python executables
+        run: |
+          python build_executables.py
+          # Verify executables were built
+          ls -la dist/
+          if [ ! -f "dist/fetch_problem" ] || [ ! -f "dist/bundle" ]; then
+            echo "Error: Executables not built successfully!"
+            exit 1
+          fi
+      
       - name: Make shell scripts executable
         run: |
           chmod +x new clear sync tools/judge tools/checker tools/bundle tools/get_problem tools/get_solve
