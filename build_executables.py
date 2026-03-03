@@ -6,7 +6,7 @@ import subprocess
 
 
 def build_executable(script_path, output_name):
-    """Build standalone executable using PyInstaller"""
+    """Build standalone executable using PyInstaller with hidden imports"""
     cmd = [
         "pyinstaller",
         "--onefile",
@@ -19,6 +19,12 @@ def build_executable(script_path, output_name):
         "--specpath",
         "build",
         "--clean",
+        "--hidden-import",
+        "requests",
+        "--hidden-import",
+        "json",
+        "--hidden-import",
+        "re",
         script_path,
     ]
 
@@ -36,8 +42,10 @@ if __name__ == "__main__":
     try:
         import PyInstaller
     except ImportError:
-        print("Installing PyInstaller...")
-        subprocess.run([sys.executable, "-m", "pip", "install", "pyinstaller"])
+        print("Installing PyInstaller and requests...")
+        subprocess.run(
+            [sys.executable, "-m", "pip", "install", "pyinstaller", "requests"]
+        )
 
     scripts = [
         ("tools/fetch_problem.py", "fetch_problem"),

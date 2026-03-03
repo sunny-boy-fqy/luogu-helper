@@ -27,7 +27,6 @@ set PROB_ID=%TARGET%
 REM Get script directory (use %~dp0 directly)
 set SCRIPT_DIR=%~dp0
 set STD_DIR=%SCRIPT_DIR%std
-set FETCH_SCRIPT=%SCRIPT_DIR%tools\fetch_problem.py
 
 REM Check if it's a problem ID
 set PROB_ID_UPPER=%PROB_ID%
@@ -50,6 +49,9 @@ if not exist "%STD_DIR%" (
     echo Error: std directory not found at %STD_DIR%
     exit /b 1
 )
+
+REM Create target directory first
+mkdir "%SCRIPT_DIR%%TARGET%" 2>nul
 xcopy /E /I /Q "%STD_DIR%" "%SCRIPT_DIR%%TARGET%\" >nul 2>&1
 echo Successfully set up %TARGET%
 echo Please run: cd %SCRIPT_DIR%%TARGET%
@@ -68,8 +70,12 @@ if not exist "%STD_DIR%" (
     exit /b 1
 )
 
+REM Create target directory first
+mkdir "%SCRIPT_DIR%%TARGET%" 2>nul
 xcopy /E /I /Q "%STD_DIR%" "%SCRIPT_DIR%%TARGET%\" >nul 2>&1
 
+REM Check if fetch_problem.py exists in tools directory
+set FETCH_SCRIPT=%SCRIPT_DIR%tools\fetch_problem.py
 if not exist "%FETCH_SCRIPT%" (
     echo Error: fetch_problem.py not found at %FETCH_SCRIPT%
     exit /b 1
