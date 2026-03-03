@@ -5,6 +5,15 @@ REM Usage: checker.bat [num_tests] [timeout_seconds]
 REM   num_tests: Number of test cases to run (default: 100)
 REM   timeout_seconds: Timeout for each test (default: 2)
 
+REM Find Python (for get_solve)
+set PYTHON=
+where python >nul 2>&1
+if %errorlevel%==0 set PYTHON=python
+if not defined PYTHON (
+    where py >nul 2>&1
+    if %errorlevel%==0 set PYTHON=py
+)
+
 REM Get the tools directory
 set TOOLS_DIR=%~dp0
 

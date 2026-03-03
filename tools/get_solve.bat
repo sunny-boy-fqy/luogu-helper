@@ -2,28 +2,31 @@
 REM Get solution from Luogu
 REM Usage: get_solve.bat
 
+REM Find Python
+set PYTHON=
+where python >nul 2>&1
+if %errorlevel%==0 set PYTHON=python
+if not defined PYTHON (
+    where py >nul 2>&1
+    if %errorlevel%==0 set PYTHON=py
+)
+if not defined PYTHON (
+    echo Error: Python not found! Please install Python or add to PATH.
+    exit /b 1
+)
+
 setlocal
 
-REM Get tools directory
+REM Get script directory
 set SCRIPT_DIR=%~dp0
+set SCRIPT_DIR=%SCRIPT_DIR:~0,-1%
+for %%i in ("%SCRIPT_DIR%") do set TOOLS_DIR=%%~dpi
+set TOOLS_DIR=%TOOLS_DIR:~0,-1%
 
 REM Check if fetch_problem.py exists
-set FETCH_SCRIPT=%SCRIPT_DIR%fetch_problem.py
+set FETCH_SCRIPT=%TOOLS_DIR%\tools\fetch_problem.py
 if not exist "%FETCH_SCRIPT%" (
-    REM Search upwards for tools directory
-    set DIR=%cd%
-    :search_loop
-    if exist "%DIR%\tools\fetch_problem.py" (
-        set FETCH_SCRIPT=%DIR%\tools\fetch_problem.py
-        goto :found
-    )
-    set PARENT_DIR=
-    for %%I in ("%DIR%\..") do set PARENT_DIR=%%~fI
-    if "%PARENT_DIR%"=="%DIR%" goto :not_found
-    set DIR=%PARENT_DIR%
-    goto :search_loop
-    :not_found
-    echo Error: Could not find tools/fetch_problem.py
+    echo Error: Could not find fetch_problem.py
     exit /b 1
 )
 
@@ -31,7 +34,8 @@ if not exist "%FETCH_SCRIPT%" (
 REM Get problem ID from current directory name
 for %%I in ("%cd%") do set PROB_ID=%%~nxI
 
-python "%FETCH_SCRIPT%" solve "%PROB_ID%" --target_dir .
+echo Fetching solution for %PROB_ID%...
+%PYTHON% "%FETCH_SCRIPT%" solve "%PROB_ID%" --target_dir .
 if %errorlevel% neq 0 (
     echo Failed to fetch solution
     exit /b 1
