@@ -108,6 +108,8 @@ jobs:
           # Create std directory with actual files (not symlinks)
           New-Item -ItemType Directory -Force -Path release\luogu-helper\std
           Copy-Item -Force std\gen.cpp, std\main.cpp release\luogu-helper\std\
+          # Copy tool .bat files to std for problem directories
+          Copy-Item -Force tools\*.bat release\luogu-helper\std\
           
           # Create tools directory with only Windows .bat files and executables
           New-Item -ItemType Directory -Force -Path release\luogu-helper\tools

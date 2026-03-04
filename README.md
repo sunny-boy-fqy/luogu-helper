@@ -130,7 +130,11 @@ int main() {
 
 ## 数据生成
 
-`include/datagen.hpp` 提供丰富的随机数据生成函数：
+`include/datagen.hpp` 提供丰富的随机数据生成函数，配合 `std/gen.cpp` 模板使用。
+
+### gen.cpp 模板
+
+`std/gen.cpp` 是预置的数据生成器模板，包含完整的使用示例：
 
 ```cpp
 #include "../include/datagen.hpp"
@@ -160,18 +164,122 @@ int main() {
 }
 ```
 
-完整 API 见 `std/gen.cpp` 模板。
+### 使用方法
+
+1. 复制 `std/gen.cpp` 到题目目录
+2. 修改 `gen.cpp` 生成符合题目要求的测试数据
+3. 运行 `./checker` 或 `./judge` 时会自动编译并执行 `gen.cpp`
+
+```bash
+cd P1000
+cp ../std/gen.cpp .
+# 编辑 gen.cpp，修改生成逻辑
+./checker 100 2  # 运行 100 组测试
+```
+
+### 完整 API
+
+| 分类 | 函数 |
+|------|------|
+| **随机数** | `random_int()`, `random_double()`, `random_bool()` |
+| **数组** | `random_array()`, `random_permutation()`, `random_increasing()`, `random_decreasing()` |
+| **字符串** | `random_string()`, `random_word()`, `random_sentence()`, `random_paragraph()` |
+| **图** | `random_tree()`, `random_connected_graph()`, `random_dag()`, `random_bipartite()` |
+| **几何** | `random_points()`, `random_convex_polygon()`, `random_simple_polygon()` |
+| **输出** | `print_array()`, `print_matrix()`, `print_graph()`, `print_tree()`, `print_points()` |
+
+详细示例见 `std/gen.cpp` 文件。
 
 ## Google Drive 同步
 
-需要 [rclone](https://rclone.org/) 配置远程 `gdrive`。
+使用 [rclone](https://rclone.org/) 实现代码备份和多设备同步。
+
+### 安装 rclone
+
+**Linux:**
+```bash
+# 方法 1：使用官方脚本
+curl https://rclone.org/install.sh | sudo bash
+
+# 方法 2：使用包管理器
+sudo apt install rclone      # Debian/Ubuntu
+sudo dnf install rclone      # Fedora
+sudo pacman -S rclone        # Arch
+```
+
+**macOS:**
+```bash
+brew install rclone
+```
+
+**Windows:**
+1. 访问 https://rclone.org/downloads/
+2. 下载 ZIP 并解压（如 `C:\rclone`）
+3. 添加 `C:\rclone` 到系统 PATH
+4. 验证：打开 CMD 运行 `rclone version`
+
+### 配置 Google Drive
 
 ```bash
-./clear   # 上传模板/工具，清理题目
+rclone config
+```
+
+按提示操作：
+1. 输入 `n` 创建新远程
+2. 名称：输入 `gdrive`（必须与脚本一致）
+3. 类型：选择 `Google Drive`（对应编号）
+4. client_id/client_secret：直接回车跳过
+5. 范围：选择 `1`（完全访问）
+6. Root folder ID：留空
+7. Service Account：留空
+8. 使用自动配置：
+   - 桌面环境：选 `y`，浏览器会自动打开
+   - 服务器/SSH：选 `n`，访问提供的 URL 获取授权码
+9. 确认配置：选 `y`
+
+验证配置：
+```bash
+rclone listremotes          # 应显示：gdrive:
+rclone lsd gdrive:          # 列出 Drive 根目录
+```
+
+### 创建同步文件夹
+
+```bash
+rclone mkdir gdrive:OI/program
+```
+
+### 使用同步命令
+
+```bash
+./clear   # 上传模板/工具，清理本地题目目录
 ./sync    # 从 Drive 下载
 ```
 
-同步到 `gdrive:OI/program`。
+同步内容：
+- `std/` - 模板文件
+- `tools/` - 所有脚本和工具
+- `include/` - 头文件库
+- `.vscode/` - VSCode 设置
+- 所有题目目录中的 `main.cpp`
+
+不同步：
+- 题目目录（只同步其中的 `main.cpp`）
+- 编译后的二进制文件
+- 测试数据输出
+
+### 常见问题
+
+**Token 过期:**
+```bash
+rclone config reconnect gdrive:
+```
+
+**速率限制:**
+Google Drive 有 API 限制。如遇限制，等待几分钟或使用 `--tpslimit 1` 参数。
+
+**大文件:**
+超过 100MB 的文件使用 `--drive-chunk-size 128M` 参数。
 
 ## 目录结构
 
