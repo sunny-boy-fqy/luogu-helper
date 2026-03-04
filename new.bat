@@ -16,19 +16,49 @@ set SCRIPT_DIR=%~dp0
 set STD_DIR=%SCRIPT_DIR%std
 
 REM Check if it's a problem ID
+REM Windows findstr doesn't support $ for end-of-line, so we use different logic
+set IS_PROBLEM_ID=0
+
+REM Convert to uppercase for matching
 set PROB_ID_UPPER=%PROB_ID%
-for %%i in (A B C D E F G H I J K L M N O P Q R S T U V W X Y Z) do (
-    set PROB_ID_UPPER=!PROB_ID_UPPER:%%i=%%i!
+
+REM Check for P/B/T/U followed by digits (e.g., P1001, B2001, T123, U99999)
+set "FIRST_CHAR=!PROB_ID_UPPER:~0,1!"
+set "REST=!PROB_ID_UPPER:~1!"
+if "!FIRST_CHAR!"=="P" (
+    if not "!REST!"=="" (
+        echo !REST! | findstr /R "^[0-9][0-9]*$" >nul 2>&1
+        if !errorlevel!==0 set IS_PROBLEM_ID=1
+    )
+)
+if "!FIRST_CHAR!"=="B" (
+    if not "!REST!"=="" (
+        echo !REST! | findstr /R "^[0-9][0-9]*$" >nul 2>&1
+        if !errorlevel!==0 set IS_PROBLEM_ID=1
+    )
+)
+if "!FIRST_CHAR!"=="T" (
+    if not "!REST!"=="" (
+        echo !REST! | findstr /R "^[0-9][0-9]*$" >nul 2>&1
+        if !errorlevel!==0 set IS_PROBLEM_ID=1
+    )
+)
+if "!FIRST_CHAR!"=="U" (
+    if not "!REST!"=="" (
+        echo !REST! | findstr /R "^[0-9][0-9]*$" >nul 2>&1
+        if !errorlevel!==0 set IS_PROBLEM_ID=1
+    )
 )
 
-echo !PROB_ID_UPPER! | findstr /R "^P[0-9]*$ ^B[0-9]*$ ^U[0-9]*$ ^T[0-9]*$" >nul 2>&1
-if %errorlevel%==0 goto :is_problem_id
+REM Check for digits followed by single uppercase letter (e.g., 1234A)
+echo !PROB_ID_UPPER! | findstr /R "^[0-9][0-9]*[A-Z]$" >nul 2>&1
+if !errorlevel!==0 set IS_PROBLEM_ID=1
 
-echo !PROB_ID_UPPER! | findstr /R "^[0-9][0-9]*[A-Z]" >nul 2>&1
-if %errorlevel%==0 goto :is_problem_id
+REM Check for underscore in name
+echo %TARGET% | findstr "_" >nul 2>&1
+if !errorlevel!==0 set IS_PROBLEM_ID=1
 
-echo %TARGET% | findstr /R "_" >nul 2>&1
-if %errorlevel%==0 goto :is_problem_id
+if !IS_PROBLEM_ID!==1 goto :is_problem_id
 
 REM Not a problem ID
 echo Creating directory: %TARGET%
