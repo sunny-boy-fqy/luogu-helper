@@ -29,15 +29,12 @@
 #ifndef DATAGEN_HPP
 #define DATAGEN_HPP
 
-// Windows/MinGW needs this for M_PI
-#ifndef _USE_MATH_DEFINES
-#define _USE_MATH_DEFINES
-#endif
-
 #include <bits/stdc++.h>
 using namespace std;
 
 namespace datagen {
+
+constexpr double MATH_PI = 3.14159265358979323846;
 
 // Initialize random seed
 inline void init_rand(int seed = -1) {
@@ -493,7 +490,7 @@ inline vector<Point> random_convex_polygon(int n, long long x_l, long long x_r,
     
     vector<double> angles;
     for (int i = 0; i < n; i++) {
-        angles.push_back(2 * M_PI * i / n + random_double(0, 0.5));
+        angles.push_back(2 * MATH_PI * i / n + random_double(0, 0.5));
     }
     sort(angles.begin(), angles.end());
     
