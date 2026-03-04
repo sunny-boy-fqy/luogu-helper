@@ -16,48 +16,75 @@ set SCRIPT_DIR=%~dp0
 set STD_DIR=%SCRIPT_DIR%std
 
 REM Check if it's a problem ID
-REM Windows findstr doesn't support $ for end-of-line, so we use different logic
+REM Windows findstr doesn't support $ for end-of-line, so we use character checking
 set IS_PROBLEM_ID=0
 
-REM Convert to uppercase for matching
+REM Convert to uppercase for matching (use case-insensitive comparisons)
 set PROB_ID_UPPER=%PROB_ID%
 
 REM Check for P/B/T/U followed by digits (e.g., P1001, B2001, T123, U99999)
 set "FIRST_CHAR=!PROB_ID_UPPER:~0,1!"
 set "REST=!PROB_ID_UPPER:~1!"
-if "!FIRST_CHAR!"=="P" (
+if /i "!FIRST_CHAR!"=="P" (
     if not "!REST!"=="" (
-        echo !REST! | findstr /R "^[0-9][0-9]*$" >nul 2>&1
-        if !errorlevel!==0 set IS_PROBLEM_ID=1
+        echo !REST! | findstr /R "[^0-9]" >nul 2>&1
+        if !errorlevel! neq 0 set IS_PROBLEM_ID=1
     )
 )
-if "!FIRST_CHAR!"=="B" (
+if /i "!FIRST_CHAR!"=="B" (
     if not "!REST!"=="" (
-        echo !REST! | findstr /R "^[0-9][0-9]*$" >nul 2>&1
-        if !errorlevel!==0 set IS_PROBLEM_ID=1
+        echo !REST! | findstr /R "[^0-9]" >nul 2>&1
+        if !errorlevel! neq 0 set IS_PROBLEM_ID=1
     )
 )
-if "!FIRST_CHAR!"=="T" (
+if /i "!FIRST_CHAR!"=="T" (
     if not "!REST!"=="" (
-        echo !REST! | findstr /R "^[0-9][0-9]*$" >nul 2>&1
-        if !errorlevel!==0 set IS_PROBLEM_ID=1
+        echo !REST! | findstr /R "[^0-9]" >nul 2>&1
+        if !errorlevel! neq 0 set IS_PROBLEM_ID=1
     )
 )
-if "!FIRST_CHAR!"=="U" (
+if /i "!FIRST_CHAR!"=="U" (
     if not "!REST!"=="" (
-        echo !REST! | findstr /R "^[0-9][0-9]*$" >nul 2>&1
-        if !errorlevel!==0 set IS_PROBLEM_ID=1
+        echo !REST! | findstr /R "[^0-9]" >nul 2>&1
+        if !errorlevel! neq 0 set IS_PROBLEM_ID=1
+    )
+)
+
+REM Check for CF/AT/at followed by alphanumeric (e.g., CF123A, AT001, atcoder)
+set "FIRST_TWO=!PROB_ID_UPPER:~0,2!"
+if /i "!FIRST_TWO!"=="CF" (
+    set "REST=!PROB_ID_UPPER:~2!"
+    if not "!REST!"=="" (
+        echo !REST! | findstr /R "[^0-9A-Z]" >nul 2>&1
+        if !errorlevel! neq 0 set IS_PROBLEM_ID=1
+    )
+)
+if /i "!FIRST_TWO!"=="AT" (
+    set "REST=!PROB_ID_UPPER:~2!"
+    if not "!REST!"=="" (
+        echo !REST! | findstr /R "[^0-9A-Z]" >nul 2>&1
+        if !errorlevel! neq 0 set IS_PROBLEM_ID=1
     )
 )
 
 REM Check for digits followed by single uppercase letter (e.g., 1234A)
-echo !PROB_ID_UPPER! | findstr /R "^[0-9][0-9]*[A-Z]$" >nul 2>&1
-if !errorlevel!==0 set IS_PROBLEM_ID=1
+set "LAST_CHAR=!PROB_ID_UPPER:~-1!"
+set "ALL_BUT_LAST=!PROB_ID_UPPER:~0,-1!"
+if not "!ALL_BUT_LAST!"=="" (
+    echo !LAST_CHAR! | findstr /R "^[A-Z]$" >nul 2>&1
+    if !errorlevel!==0 (
+        echo !ALL_BUT_LAST! | findstr /R "[^0-9]" >nul 2>&1
+        if !errorlevel! neq 0 set IS_PROBLEM_ID=1
+    )
+)
 
-REM Check for underscore in name
+REM Check for underscore in name (e.g., my_problem)
 echo %TARGET% | findstr "_" >nul 2>&1
 if !errorlevel!==0 set IS_PROBLEM_ID=1
 
+goto :check_result
+
+:check_result
 if !IS_PROBLEM_ID!==1 goto :is_problem_id
 
 REM Not a problem ID
