@@ -24,7 +24,7 @@ if not "%~1"=="" set NUM_TESTS=%~1
 if not "%~2"=="" set TIMEOUT=%~2
 
 REM Find the problem directory (current working directory)
-for %%I in in ("%cd%.") do set PROB_DIR=%%~fI
+for %%I in ("%cd%.") do set PROB_DIR=%%~fI
 for %%I in ("%PROB_DIR%") do set PROB_ID=%%~nxI
 
 echo ========================================

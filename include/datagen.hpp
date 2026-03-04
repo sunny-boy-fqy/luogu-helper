@@ -29,6 +29,11 @@
 #ifndef DATAGEN_HPP
 #define DATAGEN_HPP
 
+// Windows/MinGW needs this for M_PI
+#ifndef _USE_MATH_DEFINES
+#define _USE_MATH_DEFINES
+#endif
+
 #include <bits/stdc++.h>
 using namespace std;
 
