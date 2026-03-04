@@ -58,18 +58,19 @@ static InputPre input_pre;
 
 // ==================================================================================
 // QInStream: 极速输入 (mmap + 查表)
+// 注意：仅在文件重定向时启用优化，终端模式下使用标准 cin
 // ==================================================================================
 class QInStream {
 private:
-    static constexpr size_t INPUT_BUFFER_SIZE = 1 << 20; // 1MB (终端模式下的缓冲区)
-    static constexpr size_t LARGE_BUFFER_SIZE = 1 << 26; // 64MB (文件重定向时的缓冲区)
+    static constexpr size_t LARGE_BUFFER_SIZE = 1 << 26; // 64MB
     char *m_p, *m_c, *m_end;
     bool m_is_mmap;
     FILE *m_file;
+    bool m_use_fast_io;
     
     void refill() {
-        if (m_file && !m_is_mmap) {
-            size_t n = fread(m_p, 1, INPUT_BUFFER_SIZE, m_file);
+        if (m_file && !m_is_mmap && m_use_fast_io) {
+            size_t n = fread(m_p, 1, LARGE_BUFFER_SIZE, m_file);
             m_p[n] = '\0';
             m_c = m_p;
             m_end = m_p + n;
@@ -77,7 +78,7 @@ private:
     }
 
 public:
-    QInStream(FILE *file = stdin) : m_p(nullptr), m_c(nullptr), m_end(nullptr), m_is_mmap(false), m_file(nullptr) {
+    QInStream(FILE *file = stdin) : m_p(nullptr), m_c(nullptr), m_end(nullptr), m_is_mmap(false), m_file(nullptr), m_use_fast_io(false) {
         bool is_tty = false;
 #ifdef _WIN32
         int fd = _fileno(file);
@@ -101,6 +102,7 @@ public:
                             m_is_mmap = true;
                             m_c = m_p;
                             m_end = m_p + st.st_size;
+                            m_use_fast_io = true;
                             return;
                         }
                     }
@@ -111,6 +113,7 @@ public:
                     m_is_mmap = true;
                     m_c = m_p;
                     m_end = m_p + st.st_size;
+                    m_use_fast_io = true;
                     return;
                 }
 #endif
@@ -122,11 +125,7 @@ public:
             m_p[n] = '\0';
             m_c = m_p;
             m_end = m_p + n;
-        } else {
-            m_file = file;
-            m_p = new char[INPUT_BUFFER_SIZE + 1];
-            m_c = m_p;
-            m_end = m_p;
+            m_use_fast_io = true;
         }
     }
 
@@ -145,8 +144,12 @@ public:
 
     template <typename Tp, typename std::enable_if<std::is_integral<Tp>::value>::type * = nullptr>
     QInStream &operator>>(Tp &x) {
+        if (!m_use_fast_io) {
+            std::cin >> x;
+            return *this;
+        }
         x = 0;
-        if (m_c >= m_end && !m_is_mmap && m_file) {
+        if (m_c >= m_end) {
             refill();
         }
         char *c = m_c;
@@ -173,7 +176,11 @@ public:
     }
 
     QInStream &operator>>(char &x) {
-        if (m_c >= m_end && !m_is_mmap && m_file) {
+        if (!m_use_fast_io) {
+            std::cin >> x;
+            return *this;
+        }
+        if (m_c >= m_end) {
             refill();
         }
         while (m_c < m_end && (unsigned char)*m_c <= ' ') m_c++;
@@ -182,8 +189,12 @@ public:
     }
 
     QInStream &operator>>(std::string &x) {
+        if (!m_use_fast_io) {
+            std::cin >> x;
+            return *this;
+        }
         x.clear();
-        if (m_c >= m_end && !m_is_mmap && m_file) {
+        if (m_c >= m_end) {
             refill();
         }
         char *c = m_c;
@@ -198,7 +209,11 @@ public:
     }
 
     QInStream &operator>>(double &x) {
-        if (m_c >= m_end && !m_is_mmap && m_file) {
+        if (!m_use_fast_io) {
+            std::cin >> x;
+            return *this;
+        }
+        if (m_c >= m_end) {
             refill();
         }
         double t = 0.0;
@@ -245,8 +260,22 @@ public:
         return *this;
     }
     QInStream &operator>>(bint &x) {
+        if (!m_use_fast_io) {
+            std::cin >> x;
+            return *this;
+        }
         std::string value;
-        *this>>value;
+        *this >> value;
+        if (!value.empty()) x = value;
+        return *this;
+    }
+    QInStream &operator>>(ubint &x) {
+        if (!m_use_fast_io) {
+            std::cin >> x;
+            return *this;
+        }
+        std::string value;
+        *this >> value;
         if (!value.empty()) x = value;
         return *this;
     }
