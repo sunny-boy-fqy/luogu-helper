@@ -1,9 +1,11 @@
 #!/bin/bash
 # OI Problem setup script for Linux/macOS
-# Usage: ./new <PROBLEM_ID_OR_FOLDER_NAME>
+# Usage: ./new <PROBLEM_ID>
+# Example: ./new P1001, ./new AT_abc001_A
 
 if [ $# -eq 0 ]; then
-    echo "Usage: ./new <PROBLEM_ID_OR_FOLDER_NAME>"
+    echo "Usage: ./new <PROBLEM_ID>"
+    echo "Example: ./new P1001, ./new AT_abc001_A"
     exit 1
 fi
 
@@ -13,27 +15,6 @@ PROB_ID="$TARGET"
 # Get script directory
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 STD_DIR="$SCRIPT_DIR/std"
-
-# Check if it's a problem ID
-if [[ "$PROB_ID" =~ ^[PBTU][0-9]*$ ]] || [[ "$PROB_ID" =~ ^[0-9]+[A-Z]$ ]] || [[ "$PROB_ID" == *"_"* ]]; then
-    IS_PROBLEM_ID=true
-else
-    IS_PROBLEM_ID=false
-fi
-
-if [ "$IS_PROBLEM_ID" = false ]; then
-    # Not a problem ID, just create a directory
-    echo "Creating directory: $TARGET"
-    if [ ! -d "$STD_DIR" ]; then
-        echo "Error: std directory not found at $STD_DIR"
-        exit 1
-    fi
-    mkdir -p "$SCRIPT_DIR/$TARGET"
-    cp -r "$STD_DIR"/* "$SCRIPT_DIR/$TARGET/"
-    echo "Successfully set up $TARGET"
-    echo "Please run: cd \"$SCRIPT_DIR/$TARGET\""
-    exit 0
-fi
 
 echo "Detected problem ID: $TARGET"
 
