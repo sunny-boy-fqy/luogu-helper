@@ -75,7 +75,7 @@ if [ -n "$TIMEOUT_OVERRIDE" ]; then
 fi
 
 echo "========================================"
-echo -e "  ${BLUE}Judge${NC}: $(basename $(pwd))"
+echo -e "  ${BLUE}Judge${NC}: $(basename "$(pwd)")"
 echo "  Tests: $NUM_TESTS | Time limit: ${TIME_LIMIT_MS}ms"
 echo "========================================"
 echo ""

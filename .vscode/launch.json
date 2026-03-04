@@ -8,8 +8,8 @@
       "args": [],
       "stopAtEntry": false,
       "externalConsole": false,
-      "cwd": "/home/fangqiyu/program",
-      "program": "/home/fangqiyu/program/build/Debug/outDebug",
+      "cwd": "${workspaceFolder}",
+      "program": "${fileDirname}/${fileBasenameNoExtension}",
       "MIMode": "gdb",
       "miDebuggerPath": "gdb",
       "setupCommands": [

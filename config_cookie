@@ -21,14 +21,14 @@ read -p "Press Enter to continue..."
 
 echo
 echo "Please enter your __client_id:"
-read -r CLIENT_ID
+read -r __CLIENT_ID
 
 echo "Please enter your _uid:"
-read -r UID
+read -r __UID
 
 echo
 echo "Saving cookie to: $COOKIE_FILE"
-echo "__client_id=$CLIENT_ID; _uid=$UID" > "$COOKIE_FILE"
+echo "__client_id=$__CLIENT_ID; _uid=$__UID" > "$COOKIE_FILE"
 
 echo
 echo "Cookie configured successfully!"

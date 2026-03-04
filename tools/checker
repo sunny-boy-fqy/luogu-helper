@@ -34,7 +34,7 @@ echo ""
 # Check required files
 if [ ! -f "$PROB_DIR/gen.cpp" ]; then
     echo -e "${RED}Error: gen.cpp not found!${NC}"
-    echo "Please create gen.cpp or run: cp -r $TOOLS_DIR/../std/gen.cpp ."
+    echo "Please create gen.cpp or run: cp \"$TOOLS_DIR/../std/gen.cpp\" ."
     exit 1
 fi
 
