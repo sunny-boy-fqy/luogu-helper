@@ -102,9 +102,6 @@ jobs:
           Copy-Item -Recurse -Force std_windows release\luogu-helper\std
           Copy-Item -Recurse -Force tools release\luogu-helper\
           Copy-Item -Recurse -Force .vscode release\luogu-helper\
-          Copy-Item -Force new release\luogu-helper\
-          Copy-Item -Force clear release\luogu-helper\
-          Copy-Item -Force sync release\luogu-helper\
           Copy-Item -Force config_cookie.bat release\luogu-helper\
           Copy-Item -Force new.bat release\luogu-helper\
           Copy-Item -Force clear.bat release\luogu-helper\
