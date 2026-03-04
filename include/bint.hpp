@@ -1,8 +1,9 @@
 
 
 /**
-  引用自 https://www.luogu.com.cn/article/c70gmlxt ，读者可以去此处查看原文章
-  膜拜大神 masonxiong
+ * 与 qio.hpp 不兼容！！！！！！！
+ * 引用自 https://www.luogu.com.cn/article/c70gmlxt ，读者可以去此处查看原文章
+ * 膜拜大神 masonxiong
  * @file Integer.h
  * @brief Header file for an efficient C++ arbitrary-precision integer arithmetic library.
  *

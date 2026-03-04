@@ -212,12 +212,27 @@ public:
         m_c = c;
         return *this;
     }
-    QInStream &operator>>(bint &x){
-        std::cin>>x;
+    
+    QInStream &operator>>(bint &x) {
+        std::string buf;
+        char c;
+        while (m_c < m_end && (c = *m_c) && std::isspace(c)) m_c++;
+        if (m_c < m_end) {
+            if (*m_c == '-' || *m_c == '+') buf += *m_c++;
+            while (m_c < m_end && std::isdigit(*m_c)) buf += *m_c++;
+        }
+        if (!buf.empty()) x = buf;
         return *this;
     }
-    QInStream &operator>>(ubint &x){
-        std::cin>>x;
+    
+    QInStream &operator>>(ubint &x) {
+        std::string buf;
+        char c;
+        while (m_c < m_end && (c = *m_c) && std::isspace(c)) m_c++;
+        if (m_c < m_end) {
+            while (m_c < m_end && std::isdigit(*m_c)) buf += *m_c++;
+        }
+        if (!buf.empty()) x = buf;
         return *this;
     }
     void tie(void*) {}
@@ -320,13 +335,14 @@ public:
         m_c += len;
         return *this;
     }
-    QOutStream &operator<<(bint x){
-        std::cout<<x;
-        return *this;
+    QOutStream &operator<<(bint x) {
+        const char* str = static_cast<const char*>(x);
+        return *this << str;
     }
-    QOutStream &operator<<(ubint x){
-        std::cout<<x;
-        return *this;
+    
+    QOutStream &operator<<(ubint x) {
+        const char* str = static_cast<const char*>(x);
+        return *this << str;
     }
     void tie(void*) {}
 };
