@@ -8,6 +8,7 @@ U*/
 !include/
 !.vscode/
 !.github/
+test.cpp
 
 # Ignore compiled binaries
 *.exe

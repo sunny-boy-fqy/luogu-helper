@@ -16,7 +16,6 @@ Uses mmap on Linux, file mapping on Windows, and fallback to buffered I/O
 #include <cmath>
 #include <sys/stat.h>
 #include "bint.hpp"
-
 #ifdef _WIN32
 #include <windows.h>
 #include <io.h>
@@ -50,7 +49,6 @@ struct InputPre {
         memset(m_data, 0xFF, sizeof(m_data));
         for (uint32_t i = 0; i < 10; ++i) {
             for (uint32_t j = 0; j < 10; ++j) {
-                // 小端序存储字符 'i''j'
                 m_data[0x3030 + i + (j << 8)] = i * 10 + j;
             }
         }
@@ -63,49 +61,72 @@ static InputPre input_pre;
 // ==================================================================================
 class QInStream {
 private:
-    static constexpr size_t INPUT_BUFFER_SIZE = 1 << 26; // 64MB 
+    static constexpr size_t INPUT_BUFFER_SIZE = 1 << 20; // 1MB (终端模式下的缓冲区)
+    static constexpr size_t LARGE_BUFFER_SIZE = 1 << 26; // 64MB (文件重定向时的缓冲区)
     char *m_p, *m_c, *m_end;
     bool m_is_mmap;
+    FILE *m_file;
+    
+    void refill() {
+        if (m_file && !m_is_mmap) {
+            size_t n = fread(m_p, 1, INPUT_BUFFER_SIZE, m_file);
+            m_p[n] = '\0';
+            m_c = m_p;
+            m_end = m_p + n;
+        }
+    }
 
 public:
-    QInStream(FILE *file = stdin) : m_p(nullptr), m_c(nullptr), m_end(nullptr), m_is_mmap(false) {
+    QInStream(FILE *file = stdin) : m_p(nullptr), m_c(nullptr), m_end(nullptr), m_is_mmap(false), m_file(nullptr) {
+        bool is_tty = false;
 #ifdef _WIN32
         int fd = _fileno(file);
-        struct _stat st;
-        if (_fstat(fd, &st) == 0 && st.st_size > 0) {
-            HANDLE hFile = (HANDLE)_get_osfhandle(fd);
-            if (hFile != INVALID_HANDLE_VALUE) {
-                HANDLE hMap = CreateFileMappingW(hFile, NULL, PAGE_READONLY, 0, 0, NULL);
-                if (hMap != NULL) {
-                    m_p = (char *)MapViewOfFileEx(hMap, FILE_MAP_READ, 0, 0, 0, NULL);
-                    CloseHandle(hMap);
-                    if (m_p != NULL) {
-                        m_is_mmap = true;
-                        m_c = m_p;
-                        m_end = m_p + st.st_size;
-                        return;
+        is_tty = _isatty(fd) != 0;
+#else
+        int fd = fileno(file);
+        is_tty = isatty(fd) != 0;
+#endif
+        
+        if (!is_tty) {
+            struct stat st;
+            if (fstat(fd, &st) == 0 && st.st_size > 0) {
+#ifdef _WIN32
+                HANDLE hFile = (HANDLE)_get_osfhandle(fd);
+                if (hFile != INVALID_HANDLE_VALUE) {
+                    HANDLE hMap = CreateFileMappingW(hFile, NULL, PAGE_READONLY, 0, 0, NULL);
+                    if (hMap != NULL) {
+                        m_p = (char *)MapViewOfFileEx(hMap, FILE_MAP_READ, 0, 0, 0, NULL);
+                        CloseHandle(hMap);
+                        if (m_p != NULL) {
+                            m_is_mmap = true;
+                            m_c = m_p;
+                            m_end = m_p + st.st_size;
+                            return;
+                        }
                     }
                 }
-            }
-        }
 #elif defined(__linux__)
-        int fd = fileno(file);
-        struct stat st;
-        if (fstat(fd, &st) == 0 && st.st_size > 0) {
-            m_p = (char *)mmap(nullptr, st.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
-            if (m_p != MAP_FAILED) {
-                m_is_mmap = true;
-                m_c = m_p;
-                m_end = m_p + st.st_size;
-                return;
-            }
-        }
+                m_p = (char *)mmap(nullptr, st.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
+                if (m_p != MAP_FAILED) {
+                    m_is_mmap = true;
+                    m_c = m_p;
+                    m_end = m_p + st.st_size;
+                    return;
+                }
 #endif
-        m_p = new char[INPUT_BUFFER_SIZE + 1];
-        size_t n = fread(m_p, 1, INPUT_BUFFER_SIZE, file);
-        m_p[n] = '\0';
-        m_c = m_p;
-        m_end = m_p + n;
+            }
+            
+            m_file = file;
+            m_p = new char[LARGE_BUFFER_SIZE + 1];
+            size_t n = fread(m_p, 1, LARGE_BUFFER_SIZE, file);
+            m_p[n] = '\0';
+            m_c = m_p;
+            m_end = m_p + n;
+        } else {
+            m_file = file;
+            m_p = new char[INPUT_BUFFER_SIZE + 1];
+            refill();
+        }
     }
 
     ~QInStream() {
@@ -126,9 +147,17 @@ public:
         x = 0;
         char *c = m_c;
         char *end = m_end;
-        // skip until digit or sign
         while (c < end && ((unsigned char)*c < '0' || (unsigned char)*c > '9') && *c != '-') ++c;
-        if (c >= end) { m_c = c; return *this; }
+        if (c >= end) {
+            if (!m_is_mmap && m_file) {
+                m_c = c;
+                refill();
+                c = m_c;
+                end = m_end;
+                while (c < end && ((unsigned char)*c < '0' || (unsigned char)*c > '9') && *c != '-') ++c;
+            }
+            if (c >= end) { m_c = c; return *this; }
+        }
         bool neg = false;
         if (std::is_signed<Tp>::value && *c == '-') { neg = true; ++c; }
         while (c < end && (unsigned char)*c >= '0' && (unsigned char)*c <= '9') {
@@ -150,6 +179,10 @@ public:
 
     QInStream &operator>>(char &x) {
         while (m_c < m_end && (unsigned char)*m_c <= ' ') m_c++;
+        if (m_c >= m_end && !m_is_mmap && m_file) {
+            refill();
+            while (m_c < m_end && (unsigned char)*m_c <= ' ') m_c++;
+        }
         if (m_c < m_end) x = *m_c++;
         return *this;
     }
@@ -159,6 +192,13 @@ public:
         char *c = m_c;
         char *end = m_end;
         while (c < end && (unsigned char)*c <= ' ') ++c;
+        if (c >= end && !m_is_mmap && m_file) {
+            m_c = c;
+            refill();
+            c = m_c;
+            end = m_end;
+            while (c < end && (unsigned char)*c <= ' ') ++c;
+        }
         if (c >= end) { m_c = c; return *this; }
         char *start = c;
         while (c < end && (unsigned char)*c > ' ') ++c;
@@ -212,27 +252,10 @@ public:
         m_c = c;
         return *this;
     }
-    
     QInStream &operator>>(bint &x) {
-        std::string buf;
-        char c;
-        while (m_c < m_end && (c = *m_c) && std::isspace(c)) m_c++;
-        if (m_c < m_end) {
-            if (*m_c == '-' || *m_c == '+') buf += *m_c++;
-            while (m_c < m_end && std::isdigit(*m_c)) buf += *m_c++;
-        }
-        if (!buf.empty()) x = buf;
-        return *this;
-    }
-    
-    QInStream &operator>>(ubint &x) {
-        std::string buf;
-        char c;
-        while (m_c < m_end && (c = *m_c) && std::isspace(c)) m_c++;
-        if (m_c < m_end) {
-            while (m_c < m_end && std::isdigit(*m_c)) buf += *m_c++;
-        }
-        if (!buf.empty()) x = buf;
+        std::string value;
+        *this>>value;
+        if (!value.empty()) x = value;
         return *this;
     }
     void tie(void*) {}
@@ -335,15 +358,12 @@ public:
         m_c += len;
         return *this;
     }
+    
     QOutStream &operator<<(bint x) {
-        const char* str = static_cast<const char*>(x);
-        return *this << str;
+        const char* value = static_cast<const char*>(x);
+        return *this << value;
     }
     
-    QOutStream &operator<<(ubint x) {
-        const char* str = static_cast<const char*>(x);
-        return *this << str;
-    }
     void tie(void*) {}
 };
 
