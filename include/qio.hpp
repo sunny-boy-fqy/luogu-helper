@@ -125,7 +125,8 @@ public:
         } else {
             m_file = file;
             m_p = new char[INPUT_BUFFER_SIZE + 1];
-            refill();
+            m_c = m_p;
+            m_end = m_p;
         }
     }
 
@@ -145,19 +146,13 @@ public:
     template <typename Tp, typename std::enable_if<std::is_integral<Tp>::value>::type * = nullptr>
     QInStream &operator>>(Tp &x) {
         x = 0;
+        if (m_c >= m_end && !m_is_mmap && m_file) {
+            refill();
+        }
         char *c = m_c;
         char *end = m_end;
         while (c < end && ((unsigned char)*c < '0' || (unsigned char)*c > '9') && *c != '-') ++c;
-        if (c >= end) {
-            if (!m_is_mmap && m_file) {
-                m_c = c;
-                refill();
-                c = m_c;
-                end = m_end;
-                while (c < end && ((unsigned char)*c < '0' || (unsigned char)*c > '9') && *c != '-') ++c;
-            }
-            if (c >= end) { m_c = c; return *this; }
-        }
+        if (c >= end) { m_c = c; return *this; }
         bool neg = false;
         if (std::is_signed<Tp>::value && *c == '-') { neg = true; ++c; }
         while (c < end && (unsigned char)*c >= '0' && (unsigned char)*c <= '9') {
@@ -178,27 +173,22 @@ public:
     }
 
     QInStream &operator>>(char &x) {
-        while (m_c < m_end && (unsigned char)*m_c <= ' ') m_c++;
         if (m_c >= m_end && !m_is_mmap && m_file) {
             refill();
-            while (m_c < m_end && (unsigned char)*m_c <= ' ') m_c++;
         }
+        while (m_c < m_end && (unsigned char)*m_c <= ' ') m_c++;
         if (m_c < m_end) x = *m_c++;
         return *this;
     }
 
     QInStream &operator>>(std::string &x) {
         x.clear();
+        if (m_c >= m_end && !m_is_mmap && m_file) {
+            refill();
+        }
         char *c = m_c;
         char *end = m_end;
         while (c < end && (unsigned char)*c <= ' ') ++c;
-        if (c >= end && !m_is_mmap && m_file) {
-            m_c = c;
-            refill();
-            c = m_c;
-            end = m_end;
-            while (c < end && (unsigned char)*c <= ' ') ++c;
-        }
         if (c >= end) { m_c = c; return *this; }
         char *start = c;
         while (c < end && (unsigned char)*c > ' ') ++c;
@@ -208,11 +198,13 @@ public:
     }
 
     QInStream &operator>>(double &x) {
+        if (m_c >= m_end && !m_is_mmap && m_file) {
+            refill();
+        }
         double t = 0.0;
         int sign = 1;
         char *c = m_c;
         char *end = m_end;
-        // accept numbers starting with digit, sign or '.'
         while (c < end && !((unsigned char)*c >= '0' && (unsigned char)*c <= '9') && *c != '-' && *c != '+' && *c != '.') ++c;
         if (c >= end) { x = 0.0; m_c = c; return *this; }
         if (*c == '-') { sign = -1; ++c; }
