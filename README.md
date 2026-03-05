@@ -41,26 +41,28 @@ cd luogu-helper
 
 ```bash
 ./new P1000              # Linux/macOS
-new.bat P1000            # Windows
+.\new P1000              # Windows
 ```
 
 **注意**：请使用完整的题目名称，例如：
 - 洛谷题目：`P1000`、`B2001`、`T123`、`U99999`
-- Codeforces：`CF123A`、`cf500`
-- AtCoder：`AT_abc001_A`、`atcoder_abc100`
+- Codeforces：`CF123A`、`cf500B`
+- AtCoder：`AT_abc001_A`
 
 脚本会自动尝试从洛谷抓取样例。如果找不到样例，目录仍会创建成功（只需手动添加测试数据）。
 
 创建 `P1000/` 目录，包含：
-- `main.cpp` - 代码模板
+- `main.cpp` - 代码模板（如果想要修改，就直接在std文件夹中修改。）
 - `gen.cpp` - 数据生成器
 - `data/` - 样例数据
 
 ### 测试代码
 
 ```bash
-./judge              # 用样例测试
-./checker 100 2      # 压力测试：100组数据，2秒超时
+./judge              # 用样例测试 Linux/macOS
+./checker 100 2      # 压力测试：100组数据，2秒超时 Linux/macOS
+.\judge              # windows
+.\checker            # windows（以下windows略，就是使用.\而非./）
 ```
 
 ### 获取题目/题解

@@ -189,7 +189,6 @@ jobs:
             ```bash
             tar -xzf luogu-helper-linux.tar.gz
             cd luogu-helper
-            chmod +x new clear sync tools/*
             ./new P1000  # 创建题目
             ```
             
@@ -211,9 +210,9 @@ jobs:
             
             ### 系统要求
             
-            - **Linux**: g++ (C++17), Python 3.x
-            - **macOS**: clang++ (C++17), Python 3.x  
-            - **Windows**: MinGW-w64 或 MSVC, Python 3.x
+            - **Linux**: g++ (C++17)
+            - **macOS**: clang++ (C++17)
+            - **Windows**: MinGW-w64 或 MSVC
             
             详细文档见 [README.md](README.md) 和 [README_windows.md](README_windows.md)
           files: |
