@@ -184,7 +184,7 @@ for i in $(seq 1 $NUM_TESTS); do
         normalize_output "$USER_OUTPUT" > /tmp/judge_norm_user
         normalize_output "$OUTPUT_FILE" > /tmp/judge_norm_ans
         
-        if diff -q /tmp/judge_norm_user /tmp/judge_norm_ans > /dev/null 2>&1; then
+        if diff -q -Z /tmp/judge_norm_user /tmp/judge_norm_ans > /dev/null 2>&1; then
             echo -e "Test $i: ${GREEN}AC${NC} (${ELAPSED_MS}ms)"
         else
             echo -e "${RED}Test $i: ${RED}WA${NC} (${ELAPSED_MS}ms)"
