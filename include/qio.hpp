@@ -1,8 +1,7 @@
 /*
- * Fast I/O library - Cross platform (Linux/Windows/macOS)
+ * Fast I/O library - Cross platform
  * Supports C++98, C++11, and above.
- * Includes support for __int128 and generic BigInt fallback.
- * Safe for Interactive Terminal & Local Debugging.
+ * Condition-based BigInt support without hardcoded includes.
  */
 
 #ifndef QIO_HPP
@@ -16,6 +15,23 @@
 #include <sys/stat.h>
 #include <iostream>
 
+// ==================================================================================
+// 1. 自动环境检测 (不强制 include)
+// ==================================================================================
+#undef QIO_CAN_SUPPORT_BINT
+#if defined(__GNUC__)
+    #if (__GNUC__ * 100 + __GNUC_MINOR__ >= 408) && (__cplusplus >= 201103L)
+        #define QIO_CAN_SUPPORT_BINT 1
+    #endif
+#elif defined(_MSC_VER)
+    #if _MSC_VER >= 1900 
+        #define QIO_CAN_SUPPORT_BINT 1
+    #endif
+#endif
+
+// ==================================================================================
+// 2. 基础类型与平台适配
+// ==================================================================================
 #if defined(_MSC_VER) && _MSC_VER < 1600
     typedef unsigned __int32 uint32_t;
     typedef unsigned __int16 uint16_t;
@@ -40,36 +56,26 @@
 #endif
 
 // ==================================================================================
-// 类型识别：支持基本整数及 __int128
+// 3. 类型识别
 // ==================================================================================
 template<typename T> struct QIsIntegral { static const bool value = false; };
 template<typename T> struct QIsSigned { static const bool value = false; };
 
-#define Q_REGISTER_INT(Type, Signed) \
+#define Q_REG_INT(Type, Signed) \
     template<> struct QIsIntegral<Type> { static const bool value = true; }; \
     template<> struct QIsSigned<Type> { static const bool value = Signed; };
 
-Q_REGISTER_INT(int, true)
-Q_REGISTER_INT(long, true)
-Q_REGISTER_INT(short, true)
-Q_REGISTER_INT(signed char, true)
-Q_REGISTER_INT(unsigned int, false)
-Q_REGISTER_INT(unsigned long, false)
-Q_REGISTER_INT(unsigned short, false)
-Q_REGISTER_INT(unsigned char, false)
-
-#if defined(__GNUC__) || defined(_MSC_VER) || defined(__clang__)
-    Q_REGISTER_INT(long long, true)
-    Q_REGISTER_INT(unsigned long long, false)
+Q_REG_INT(int, true) Q_REG_INT(long, true) Q_REG_INT(short, true) Q_REG_INT(signed char, true)
+Q_REG_INT(unsigned int, false) Q_REG_INT(unsigned long, false) Q_REG_INT(unsigned short, false) Q_REG_INT(unsigned char, false)
+#if defined(__GNUC__) || defined(_MSC_VER)
+    Q_REG_INT(long long, true) Q_REG_INT(unsigned long long, false)
 #endif
-
 #ifdef __SIZEOF_INT128__
-    Q_REGISTER_INT(__int128, true)
-    Q_REGISTER_INT(unsigned __int128, false)
+    Q_REG_INT(__int128, true) Q_REG_INT(unsigned __int128, false)
 #endif
 
 // ==================================================================================
-// 辅助查表
+// 4. 辅助查表
 // ==================================================================================
 struct OutputTable {
     char data[100][2];
@@ -123,7 +129,7 @@ public:
                     HANDLE hMap = CreateFileMappingW(hFile, NULL, PAGE_READONLY, 0, 0, NULL);
                     if (hMap != NULL) {
                         m_p = (char *)MapViewOfFileEx(hMap, FILE_MAP_READ, 0, 0, 0, NULL);
-                        CloseHandle(hMap); // 修复句柄泄漏：无论映射成功与否，立刻关闭句柄
+                        CloseHandle(hMap);
                         if (m_p) { m_is_mmap = true; m_c = m_p; m_end = m_p + st.st_size; m_use_fast_io = true; return; }
                     }
                 }
@@ -151,7 +157,7 @@ public:
     }
 
     inline int get_char() {
-        if (!m_use_fast_io) return std::cin.get(); // 修复终端挂起问题
+        if (!m_use_fast_io) return std::cin.get();
         if (m_c >= m_end) { refill(); if (m_c >= m_end) return EOF; }
         return (unsigned char)*m_c++;
     }
@@ -159,8 +165,6 @@ public:
     template <typename Tp>
     QInStream& operator>>(Tp &x) {
         if (!m_use_fast_io) { std::cin >> x; return *this; }
-        if (!QIsIntegral<Tp>::value) return generic_read(x);
-
         x = 0; if (m_c >= m_end) refill();
         char *c = m_c, *end = m_end;
         while (c < end && (*c < '0' || *c > '9') && *c != '-') ++c;
@@ -178,16 +182,9 @@ public:
         if (neg) x = -x; m_c = c; return *this;
     }
 
-    template <typename Tp>
-    QInStream& generic_read(Tp &x) {
-        if (!m_use_fast_io) { std::cin >> x; return *this; }
-        std::string s; *this >> s; if (!s.empty()) x = s;
-        return *this;
-    }
-
     QInStream &operator>>(char &x) {
         if (!m_use_fast_io) { std::cin >> x; return *this; }
-        int c = get_char(); while (c != EOF && c <= ' ') c = get_char();
+        int c = get_char(); while (c != EOF && (unsigned char)c <= ' ') c = get_char();
         if (c != EOF) x = (char)c; return *this;
     }
 
@@ -202,6 +199,18 @@ public:
         x.assign(start, (size_t)(c - start));
         m_c = c; return *this;
     }
+
+    // 只有在外部已经定义了 bint 类型时才激活此重载
+#ifdef QIO_HAS_BINT
+    QInStream &operator>>(bint &x) {
+        std::string s; *this >> s; if (!s.empty()) x = s; return *this;
+    }
+    QInStream &operator>>(ubint &x) {
+        std::string s; *this >> s; if (!s.empty()) x = s; return *this;
+    }
+#endif
+
+    void tie(void* p = NULL) {}
 };
 
 // ==================================================================================
@@ -217,7 +226,6 @@ private:
 public:
     QOutStream(FILE *file = stdout) : m_file(file) {
         m_c = m_buf; m_end = m_buf + BUFFER_SIZE;
-        // 修复输出缓冲导致终端挂起问题
         int fd = Q_FILENO(file);
         m_use_fast_io = !Q_ISATTY(fd);
     }
@@ -236,11 +244,8 @@ public:
     template <typename Tp>
     QOutStream &operator<<(Tp x) {
         if (!m_use_fast_io) { std::cout << x; return *this; }
-        if (!QIsIntegral<Tp>::value) return generic_write(x);
-        if (m_end - m_c < 40) flush(); 
+        if (m_end - m_c < 64) flush(); 
         if (x == 0) { put_char('0'); return *this; }
-        
-        // C++98 环境下移除了原有的 std::conditional
         
         if (QIsSigned<Tp>::value && x < 0) {
             put_char('-');
@@ -258,7 +263,7 @@ public:
 
     template <typename UTp>
     void write_unsigned(UTp val) {
-        char tmp[48]; int len = 0;
+        char tmp[128]; int len = 0;
         while (val >= 100) {
             int idx = (int)(val % 100); val /= 100;
             tmp[len++] = output_table.data[idx][1];
@@ -269,12 +274,6 @@ public:
             tmp[len++] = output_table.data[(int)val][0];
         } else tmp[len++] = (char)(val + '0');
         while (len--) put_char(tmp[len]);
-    }
-
-    template <typename Tp>
-    QOutStream& generic_write(const Tp &x) {
-        if (!m_use_fast_io) { std::cout << x; return *this; }
-        return *this << static_cast<const char*>(x);
     }
 
     QOutStream &operator<<(char x) { put_char(x); return *this; }
@@ -288,16 +287,28 @@ public:
         for (size_t i = 0; i < s.size(); ++i) put_char(s[i]); 
         return *this; 
     }
+
+    // 只有在外部已经定义了 bint 类型时才激活此重载
+#ifdef QIO_HAS_BINT
+    QOutStream &operator<<(const bint &x) {
+        // 利用 x 提供的 operator std::string()
+        return *this << static_cast<std::string>(x);
+    }
+    QOutStream &operator<<(const ubint &x) {
+        return *this << static_cast<std::string>(x);
+    }
+#endif
+
+    void tie(void* p = NULL) {}
 };
 
 static QInStream qin(stdin);
 static QOutStream qout(stdout);
 
-// 强制解除与标准库宏的冲突
 #undef getchar
 #undef putchar
-inline int getchar() { return qin.get_char(); }
-inline void putchar(char c) { qout.put_char(c); }
+#define getchar() qin.get_char()
+#define putchar(c) qout.put_char(c)
 
 #ifndef QIO_NO_OVERRIDE
     #define cin qin

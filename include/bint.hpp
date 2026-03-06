@@ -1,8 +1,9 @@
 
 
 /**
- * 引用自 https://www.luogu.com.cn/article/c70gmlxt ，读者可以去此处查看原文章
- * 膜拜大神 masonxiong
+  同时使用bint.hpp与qio.hpp，bint.hpp必须在前面。
+  引用自 https://www.luogu.com.cn/article/c70gmlxt ，读者可以去此处查看原文章
+  膜拜大神 masonxiong
  * @file Integer.h
  * @brief Header file for an efficient C++ arbitrary-precision integer arithmetic library.
  *
@@ -13,9 +14,9 @@
  * @author [masonxiong](https://www.luogu.com.cn/user/446979), [yuygfgg](https://www.luogu.com.cn/user/251551)
  * @date 2025-9-04
  */
-
-#ifndef BINT_HPP
-#define BINT_HPP 20250904L
+#ifndef QIO_HPP
+#ifndef INTEGER_H
+#define INTEGER_H 20250904L
 
 #include <algorithm>
 #include <cmath>
@@ -1209,3 +1210,4 @@ typedef UnsignedInteger ubint;
 #undef __CONSTEXPR
 #endif
 
+#endif
