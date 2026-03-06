@@ -15,9 +15,9 @@
  * @date 2025-9-04
  */
 #ifndef QIO_HPP
-#ifndef INTEGER_H
-#define INTEGER_H 20250904L
-
+#ifndef BINT_HPP
+#define BINT_HPP 20250904L
+#define QIO_HAS_BINT
 #include <algorithm>
 #include <cmath>
 #include <complex>
